@@ -1,17 +1,25 @@
-CXXFLAGS=-std=c++17 -g
+CPPFLAGS=-std=c++17 -g
+
+OBJDIR=obj
 
 SOURCES=main.cpp intmat.cpp matsystem.cpp 
-OBJECTS=$(subst .cpp,.o,$(SOURCES))
+OBJECTS=$(patsubst %.cpp,$(OBJDIR)/%.o,$(SOURCES))
+
 
 build: $(OBJECTS)
-	g++ $(CXXFLAGS) -o build $(OBJECTS) 
+	g++ $(CPPFLAGS) -o build $(OBJECTS) 
 
-main.o: main.cpp
-	g++ $(CXXFLAGS) -c main.cpp
+$(OBJECTS): | obj
 
-intmat.o: intmat.cpp
-	g++ $(CXXFLAGS) -c intmat.cpp
+$(OBJDIR):
+	mkdir $(OBJDIR)
 
-matsystem.o: matsystem.cpp
-	g++ $(CXXFLAGS) -c matsystem.cpp
+$(OBJDIR)/%.o: %.cpp %.hpp
+	g++ $(CPPFLAGS) -c $< -o $@
 
+$(OBJDIR)/main.o: main.cpp
+	g++ $(CPPFLAGS) -c main.cpp -o $(OBJDIR)/main.o
+
+.PHONY : clean
+clean: 
+	rm build $(OBJECTS)
