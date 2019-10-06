@@ -140,18 +140,34 @@ void MatSystem::PartRowReduce(IntMat& B, IntMat& Q, IntMat& Qinv, int k, int l)
 
 int MatSystem::IndexSmallestNonzero(std::vector<int> v, int start)
 {
-	int min = v[start];
+	int min = std::abs(v[start]);
 	int index = start;
-	for (int i = start+1; i < v.size(); ++i)
+
+	// to avoid the annoying case where we happen to choose min = 0
+	// we will set min to be the largest possible integer so we would
+	// (ideally) always choose an element smaller than it in the following
+	// loop.
+	//
+	// Yes, this is a bit of a hacky solution. I am choosing to do it this
+	// way because it seems preferable (for now) to adding in a check
+	// in the loop.
+	
+	if (min == 0)
 	{
-		int element = v[i];
+		min = std::numeric_limits<int>::max();
+	}
+
+	// begin at start + 1 since we already have min = v[start].
+	for (int i = start + 1; i < v.size(); ++i)
+	{
+		int element = std::abs(v[i]);
 		if (element != 0 && element < min)
 		{
 			min = element;
 			index = i;
 		}
 	}
-	std::cout << index << std::endl;
+	
 	return index;
 }
 
@@ -211,12 +227,46 @@ void MatSystem::RowEchelon(IntMat& B)
 			break;
 		}
 		++k;
-		std::cout << k << " " << l << std::endl;
-		B.Print();
 		RowReduce(B, Q, Qinv, k, l);
 	}
 }
 
+std::vector<IntMat> MatSystem::GetRowEchelon(IntMat B)
+{
+	int rows = B.getRows();
+	int columns = B.getColumns();
+	IntMat Q = IntMat::CreateIdentity(rows, rows);
+	IntMat Qinv = Q;
+	int k = -1;
+	int l = 0;
+
+	std::vector<int> zero;
+	while (k < rows)
+	{
+		while ((l <= columns) && (IsZero(B.getSubColumn(l, k+1, rows))))
+		{
+			++l;
+		}
+		if (l == columns + 1)
+		{
+			k = rows;
+			break;
+		}
+		++k;
+		RowReduce(B, Q, Qinv, k, l);
+	}
+
+	std::vector<IntMat> result = {B, Q, Qinv};
+	return result;
+}
 
 
+void MatSystem::PrintVector(std::vector<int> vector)
+{
+	for (int i = 0; i < vector.size(); ++i)
+	{
+		std::cout << vector[i] << " ";
+	}
+	std::cout << std::endl;
+}
 

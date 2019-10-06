@@ -22,6 +22,7 @@ IntMat IntMat::CreateIdentity(int rows, int columns)
 	// choose the minimum of the number of rows and columns
 	// and assign 1 to those spots.
 	int min = (rows <= columns)? rows : columns;
+
 	for (int i = 0; i < min; ++i)
 	{
 		id.setElement(i, i, 1);

@@ -1,5 +1,6 @@
 #pragma once
 #include <cmath>
+#include <limits>
 #include "intmat.hpp"
 
 
@@ -77,9 +78,11 @@ public:
 	
 	// algorithm 3.39: put a matrix into row echelon form
 	void RowEchelon(IntMat& B);
+	std::vector<IntMat> GetRowEchelon(IntMat B);
 
 
 private:
 	
+	void PrintVector(std::vector<int> vector);
 
 };

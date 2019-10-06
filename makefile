@@ -1,6 +1,6 @@
 CXXFLAGS=-std=c++17 -g
 
-SOURCES=main.cpp intmat.cpp matsystem.cpp
+SOURCES=main.cpp intmat.cpp matsystem.cpp 
 OBJECTS=$(subst .cpp,.o,$(SOURCES))
 
 build: $(OBJECTS)
@@ -14,3 +14,4 @@ intmat.o: intmat.cpp
 
 matsystem.o: matsystem.cpp
 	g++ $(CXXFLAGS) -c matsystem.cpp
+
