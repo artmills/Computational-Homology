@@ -24,9 +24,6 @@ int main()
 
 	MatSystem system;
 
-	//std::vector<int> Arow0 = {3, 2, 1, 4};
-	//std::vector<int> Arow1 = {2, 3, 1, -1};
-	//std::vector<int> Arow2 = {4, 4, -2, -2};
 	std::vector<int> Arow0 = {0, 2, 2};
 	std::vector<int> Arow1 = {1, 0, -1};
 	std::vector<int> Arow2 = {3, 4, 1};
@@ -36,21 +33,6 @@ int main()
 	A.setRow(1, Arow1);
 	A.setRow(2, Arow2);
 	A.setRow(3, Arow3);
-
-	
-	/*
-	std::vector<int> Arow0 = {0, 2, 2};
-	std::vector<int> Arow1 = {1, 0, -1};
-	std::vector<int> Arow2 = {3, 4, 1};
-	std::vector<int> Arow3 = {5, 3, -2};
-	IntMat A(4, 3);
-	A.setRow(0, Arow0);
-	A.setRow(1, Arow1);
-	A.setRow(2, Arow2);
-	A.setRow(3, Arow3);
-
-	IntMat B = system.Transpose(A);
-	*/
 
 	std::cout << "Initial matrix A: " << std::endl;
 	A.Print();

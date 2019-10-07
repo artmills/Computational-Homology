@@ -233,6 +233,8 @@ void MatSystem::RowEchelon(IntMat& B)
 
 std::vector<IntMat> MatSystem::GetRowEchelon(IntMat B)
 {
+	//std::cout << "Rows: " << B.getRows();
+	//std::cout << "Columns: " << B.getColumns() << std::endl;
 	int rows = B.getRows();
 	int columns = B.getColumns();
 	IntMat Q = IntMat::CreateIdentity(rows, rows);
