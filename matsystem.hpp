@@ -17,33 +17,16 @@ public:
 	~MatSystem();
 
 	// operations on matrices:
-	IntMat Add(IntMat& left, IntMat& right);
-	IntMat Multiply(IntMat& left, IntMat& right);
-	void ScalarMultiple(IntMat& matrix, int scalar);
 	IntMat Transpose(IntMat& matrix);
 
-	// elementary row operations:
-	void RowExchange(IntMat& matrix, int row1, int row2);
-	void ColumnExchange(IntMat& matrix, int column1, int column2);
 
-	void RowMultiply(IntMat& matrix, int row, int scalar);
-	void ColumnMultiply(IntMat& matrix, int column, int scalar);
-
-	void RowAdd(IntMat& matrix, int targetRow, int givenRow, int scalar);
-	void ColumnAdd(IntMat& matrix, int targetColumn, int givenColumn, int scalar);
-
-	// algorithms 3.15, 3.16, 3.17
-	// these perform row/column operations on a matrix B = Qinverse*A*R
-	// while keeping track of the bases
+	// Fancy elementary row operations that keep track of 
+	// the bases of a homomorphism f: X \to Y
+	// and how they change on those same row operations.
+	// Given by algorithms 3.15, 3.16, 3.17.
 	void RowExchangeOperation(IntMat& matrix, IntMat& Q, IntMat& Qinverse, int row1, int row2);
 	void ColumnExchangeOperation(IntMat& matrix, IntMat& R, IntMat& Rinverse, int column1, int column2);
 	
-	// quick note: 
-	// we can only consider multiplication by \pm 1 as an elementary
-	// row or column operation. this is because in the integers,
-	// \pm 1 are the only numbers with multiplicative inverses.
-	// we will therefore hardcode these values in the definitions of
-	// the row/column multiply operations.
 	void RowMultiplyOperation(IntMat& matrix, IntMat& R, IntMat& Rinverse, int row);
 	void ColumnMultiplyOperation(IntMat& matrix, IntMat& R, IntMat& Rinverse, int column);
 
@@ -51,7 +34,7 @@ public:
 	void ColumnAddOperation(IntMat& matrix, IntMat& R, IntMat& Rinverse, int targetColumn, int givenColumn, int scalar);
 
 
-	// row reduction algorithms:
+	// Row reduction algorithms:
 	
 	// partial row reduction: algorithm 3.29
 	// for a matrix B that satisfies the (k-1, l-1) criterion of
@@ -81,8 +64,24 @@ public:
 	std::vector<IntMat> GetRowEchelon(IntMat B);
 
 
+	// applications of the row echelon form.
+	std::vector<IntMat> KernelImage(IntMat B);
+
+
 private:
 	
+	// elementary row operations:
+	void RowExchange(IntMat& matrix, int row1, int row2);
+	void ColumnExchange(IntMat& matrix, int column1, int column2);
+
+	void RowMultiply(IntMat& matrix, int row, int scalar);
+	void ColumnMultiply(IntMat& matrix, int column, int scalar);
+
+	void RowAdd(IntMat& matrix, int targetRow, int givenRow, int scalar);
+	void ColumnAdd(IntMat& matrix, int targetColumn, int givenColumn, int scalar);
+
+	
+	// utility:	
 	void PrintVector(std::vector<int> vector);
 
 };

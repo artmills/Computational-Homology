@@ -136,6 +136,7 @@ IntMat IntMat::getSubMatrix(int rowStart, int rowEnd, int columnStart, int colum
 
 
 
+/********* Utility *********/
 
 IntMat IntMat::CreateIdentity(int size)
 {
@@ -162,9 +163,6 @@ IntMat IntMat::CreateIdentity(int rows, int columns)
 	return id;
 }
 
-
-
-
 void IntMat::Print()
 {
 	for (int i = 0; i < getRows(); ++i)
@@ -177,6 +175,12 @@ void IntMat::Print()
 	}
 	std::cout << std::endl;
 }
+
+
+
+
+
+/********* Matrix ring operations *********/
 
 IntMat IntMat::Sum(IntMat& left, IntMat& right)
 {

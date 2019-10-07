@@ -5,24 +5,7 @@ MatSystem::MatSystem(){}
 MatSystem::~MatSystem(){}
 
 
-IntMat MatSystem::Add(IntMat& left, IntMat& right)
-{
-	return left + right;
-}
-IntMat MatSystem::Multiply(IntMat& left, IntMat& right)
-{
-	return left * right;
-}
-void MatSystem::ScalarMultiple(IntMat& matrix, int scalar)
-{
-	for (int i = 0; i < matrix.getRows(); ++i)
-	{
-		for (int j = 0; j < matrix.getColumns(); ++j)
-		{
-			matrix.setElement(i, j, matrix.getElement(i, j) * scalar);
-		}
-	}
-}
+/********** Operations on matrices **********/
 
 IntMat MatSystem::Transpose(IntMat& matrix)
 {
@@ -34,6 +17,10 @@ IntMat MatSystem::Transpose(IntMat& matrix)
 	return transpose;
 }
 
+
+
+
+/********** Elementary row operations **********/
 
 void MatSystem::RowExchange(IntMat& matrix, int row1, int row2)
 {
@@ -88,6 +75,12 @@ void MatSystem::ColumnAdd(IntMat& matrix, int targetColumn, int givenColumn, int
 	matrix.setColumn(targetColumn, target);	
 }
 
+
+
+
+
+/********** Fancy elementary row operations **********/
+
 void MatSystem::RowExchangeOperation(IntMat& matrix, IntMat& Q, IntMat& Qinverse, int row1, int row2)
 {
 	RowExchange(matrix, row1, row2);
@@ -101,6 +94,11 @@ void MatSystem::ColumnExchangeOperation(IntMat& matrix, IntMat& R, IntMat& Rinve
 	RowExchange(Rinverse, column1, column2);
 }
 
+// note: over the ring of integers the only elements
+// with multiplicative inverses are -1, 1. 
+// therefore we can only consider multiplication by -1
+// as an elementary row operation.
+// as such we will hardcode the value -1 for the scalar.
 void MatSystem::RowMultiplyOperation(IntMat& matrix, IntMat& Q, IntMat& Qinverse, int row)
 {
 	RowMultiply(matrix, row, -1);
@@ -129,6 +127,9 @@ void MatSystem::ColumnAddOperation(IntMat& matrix, IntMat& R, IntMat& Rinverse, 
 }
 
 
+
+/********** Preliminaries for row reduction **********/
+
 void MatSystem::PartRowReduce(IntMat& B, IntMat& Q, IntMat& Qinv, int k, int l)
 {
 	for (int i = k+1; i < B.getRows(); ++i)
@@ -147,7 +148,6 @@ int MatSystem::IndexSmallestNonzero(std::vector<int> v, int start)
 	// we will set min to be the largest possible integer so we would
 	// (ideally) always choose an element smaller than it in the following
 	// loop.
-	//
 	// Yes, this is a bit of a hacky solution. I am choosing to do it this
 	// way because it seems preferable (for now) to adding in a check
 	// in the loop.
@@ -191,6 +191,11 @@ bool MatSystem::IsZero(std::vector<int> a)
 	return true;
 }
 
+
+
+
+
+/********** Row reduction **********/
 
 void MatSystem::RowReduce(IntMat& B, IntMat& Q, IntMat& Qinv, int k, int l)
 {
@@ -261,6 +266,30 @@ std::vector<IntMat> MatSystem::GetRowEchelon(IntMat B)
 	std::vector<IntMat> result = {B, Q, Qinv};
 	return result;
 }
+
+
+/********** Applications of row echelon form **********/
+
+std::vector<IntMat> MatSystem::KernelImage(IntMat B)
+{
+	int rows = B.getRows();
+	int columns = B.getColumns();
+	IntMat Bt = Transpose(B);
+	std::vector<int> rowEchelon = GetRowEchelon(Bt);
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 void MatSystem::PrintVector(std::vector<int> vector)
