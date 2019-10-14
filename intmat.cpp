@@ -108,10 +108,14 @@ std::vector<int> IntMat::getSubRow(int row, int start, int end)
 	}
 
 	// check if accessing the proper columns:
-	if (end >= matrix[0].size() || end < start || start < 0)
+	if (end < start || start < 0)
 	{
 		std::cout << "DIMENSION ERROR FOR SUBROW!" << std::endl;
 		return v;
+	}
+	if (end >= matrix[0].size())
+	{
+		end = matrix[0].size();
 	}
 
 	// put only the proper elements into the vector v:

@@ -231,10 +231,10 @@ void MatSystem::RowEchelon(IntMat& B)
 			break;
 		}
 		++k;
-		std::cout << k << " " << l << std::endl;
+		//std::cout << k << " " << l << std::endl;
 		RowReduce(B, Q, Qinv, k, l);
 	}
-	std::cout << k << std::endl;
+	//std::cout << k << std::endl;
 }
 
 RowEchelonForm MatSystem::GetRowEchelon(IntMat B)
@@ -273,16 +273,15 @@ std::vector<IntMat> MatSystem::KernelImage(IntMat B)
 {
 	int lastRow = B.getRows() - 1;
 	int lastColumn = B.getColumns() - 1;
-	RowEchelonForm ref = GetRowEchelon(Transpose(B));
+	IntMat Bt = Transpose(B);
+	RowEchelonForm ref = GetRowEchelon(Bt);
 	
-	IntMat Bt = Transpose(ref.getB());
-	IntMat Pt = Transpose(ref.getQ());
+	IntMat resultBt = Transpose(ref.getB());
+	IntMat resultPt = Transpose(ref.getQ());
 
 	std::vector<IntMat> kernel_image;
-	//std::cout << 1 << " " << rows << " " << ref.getK()+1 << " " << columns << std::endl;
-	IntMat kernel = Pt.getSubMatrix(1, lastRow, ref.getK(), lastColumn);
-	kernel_image.push_back(Pt.getSubMatrix(1, lastRow, ref.getK(), lastColumn));
-	kernel_image.push_back(Bt.getSubMatrix(1, lastRow, 1, ref.getK() - 1));
+	IntMat kernel = resultPt.getSubMatrix(0, lastRow, ref.getK(), lastColumn);
+	kernel_image.push_back(kernel);
 	return kernel_image;
 }
 

@@ -48,7 +48,7 @@ int main()
 	std::vector<int> Arow1 = {2, 3, 1, -1};
 	std::vector<int> Arow2 = {4, 4, -2, -2};
 	//std::vector<int> Arow2 = {0, 0, 0, 0};
-	//*/
+	*/
 
 	IntMat A(4, 3);
 	A.setRow(0, Arow0);
