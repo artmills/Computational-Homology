@@ -199,14 +199,14 @@ bool MatSystem::IsZero(std::vector<int> a)
 
 void MatSystem::RowReduce(IntMat& B, IntMat& Q, IntMat& Qinv, int k, int l)
 {
-	int rows = B.getRows();
-	std::vector<int> subColumn = B.getSubColumn(l, k+1, rows);
+	int lastRow = B.getRows() - 1;
+	std::vector<int> subColumn = B.getSubColumn(l, k+1, lastRow);
 	std::vector<int> zero(subColumn.size());
 	while (!IsZero(subColumn))
 	{
 		RowPrepare(B, Q, Qinv, k, l);
 		PartRowReduce(B, Q, Qinv, k, l);
-		subColumn = B.getSubColumn(l, k+1, rows);
+		subColumn = B.getSubColumn(l, k+1, lastRow);
 	}
 }
 
@@ -214,57 +214,56 @@ void MatSystem::RowEchelon(IntMat& B)
 {
 	int rows = B.getRows();
 	int columns = B.getColumns();
-	IntMat Q = IntMat::CreateIdentity(rows, rows);
+	IntMat Q = IntMat::CreateIdentity(rows);
 	IntMat Qinv = Q;
 	int k = -1;
 	int l = 0;
 
 	std::vector<int> zero;
-	while (k < rows)
+	while (k < rows - 2)
 	{
-		while ((l <= columns) && (IsZero(B.getSubColumn(l, k+1, rows))))
+		while ((l < columns) && (IsZero(B.getSubColumn(l, k+1, rows - 1))))
 		{
 			++l;
 		}
-		if (l == columns + 1)
+		if (l == columns)
 		{
-			k = rows;
 			break;
 		}
 		++k;
+		std::cout << k << " " << l << std::endl;
 		RowReduce(B, Q, Qinv, k, l);
 	}
+	std::cout << k << std::endl;
 }
 
-std::vector<IntMat> MatSystem::GetRowEchelon(IntMat B)
+RowEchelonForm MatSystem::GetRowEchelon(IntMat B)
 {
-	//std::cout << "Rows: " << B.getRows();
-	//std::cout << "Columns: " << B.getColumns() << std::endl;
 	int rows = B.getRows();
 	int columns = B.getColumns();
-	IntMat Q = IntMat::CreateIdentity(rows, rows);
+	IntMat Q = IntMat::CreateIdentity(rows);
 	IntMat Qinv = Q;
 	int k = -1;
 	int l = 0;
 
 	std::vector<int> zero;
-	while (k < rows)
+	while (k < rows - 1)
 	{
-		while ((l <= columns) && (IsZero(B.getSubColumn(l, k+1, rows))))
+		//std::cout << k+1 << " " << l << std::endl;
+		while ((l < columns) && (IsZero(B.getSubColumn(l, k+1, rows - 1))))
 		{
 			++l;
 		}
-		if (l == columns + 1)
+		if (l == columns)
 		{
-			k = rows;
 			break;
 		}
 		++k;
 		RowReduce(B, Q, Qinv, k, l);
 	}
 
-	std::vector<IntMat> result = {B, Q, Qinv};
-	return result;
+	RowEchelonForm ref(B, Q, Qinv, k);
+	return ref;
 }
 
 
@@ -272,11 +271,19 @@ std::vector<IntMat> MatSystem::GetRowEchelon(IntMat B)
 
 std::vector<IntMat> MatSystem::KernelImage(IntMat B)
 {
-	int rows = B.getRows();
-	int columns = B.getColumns();
-	IntMat Bt = Transpose(B);
-	std::vector<int> rowEchelon = GetRowEchelon(Bt);
+	int lastRow = B.getRows() - 1;
+	int lastColumn = B.getColumns() - 1;
+	RowEchelonForm ref = GetRowEchelon(Transpose(B));
+	
+	IntMat Bt = Transpose(ref.getB());
+	IntMat Pt = Transpose(ref.getQ());
 
+	std::vector<IntMat> kernel_image;
+	//std::cout << 1 << " " << rows << " " << ref.getK()+1 << " " << columns << std::endl;
+	IntMat kernel = Pt.getSubMatrix(1, lastRow, ref.getK(), lastColumn);
+	kernel_image.push_back(Pt.getSubMatrix(1, lastRow, ref.getK(), lastColumn));
+	kernel_image.push_back(Bt.getSubMatrix(1, lastRow, 1, ref.getK() - 1));
+	return kernel_image;
 }
 
 
@@ -291,6 +298,9 @@ std::vector<IntMat> MatSystem::KernelImage(IntMat B)
 
 
 
+
+
+/********** Utility **********/
 
 void MatSystem::PrintVector(std::vector<int> vector)
 {

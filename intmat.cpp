@@ -98,37 +98,74 @@ std::vector<int> IntMat::getColumn(int column)
 /********* getters/setters for sub{matrices/rows/columns} *********/
 std::vector<int> IntMat::getSubRow(int row, int start, int end)
 {
-	std::vector<int> subRow(end - start);
-	for (int i = start; i < end; ++i)
+	std::vector<int> v;
+	
+	// check if accessing a valid row:
+	if (row > matrix.size() || row < 0)
 	{
-		subRow[i - start] = this->matrix[row][i];
+		std::cout << "DIMENSION ERROR FOR SUBROW!" << std::endl;
+		return v;
 	}
-	return subRow;	
+
+	// check if accessing the proper columns:
+	if (end >= matrix[0].size() || end < start || start < 0)
+	{
+		std::cout << "DIMENSION ERROR FOR SUBROW!" << std::endl;
+		return v;
+	}
+
+	// put only the proper elements into the vector v:
+	for (int i = start; i <= end; ++i)
+	{
+		v.push_back(matrix[row][i]);
+	}
+
+	return v;
 }
 std::vector<int> IntMat::getSubColumn(int column, int start, int end)
 {
-	std::vector<int> subColumn(end - start);
-	for (int i = start; i < end; ++i)
+	std::vector<int> v;
+	
+	// check if accessing a valid column:
+	if (column > matrix[0].size() || column < 0)
 	{
-		subColumn[i - start] = this->matrix[i][column];	
+		std::cout << "DIMENSION ERROR FOR SUBCOLUMN!" << std::endl;
+		std::cout << "Column: " << column << std::endl;
+		std::cout << "Start: " << start << std::endl;
+		std::cout << "End: " << end << std::endl;
+		std::cout << std::endl;
+		return v;
 	}
-	return subColumn;
+
+	// check if accessing the proper columns:
+	if (end >= matrix.size() || end < start || start < 0)
+	{
+		std::cout << "DIMENSION ERROR FOR SUBCOLUMN!" << std::endl;
+		std::cout << "Column: " << column << std::endl;
+		std::cout << "Start: " << start << std::endl;
+		std::cout << "End: " << end << std::endl;
+		return v;
+	}
+
+	// put only the proper elements into the vector v:
+	for (int i = start; i <= end; ++i)
+	{
+		v.push_back(matrix[i][column]);
+	}
+
+	return v;
 }
 
 IntMat IntMat::getSubMatrix(int rowStart, int rowEnd, int columnStart, int columnEnd)
 {
-	int rows = rowEnd - rowStart;
-	int columns = columnEnd - columnStart;
+	int rows = rowEnd - rowStart + 1;
+	int columns = columnEnd - columnStart + 1;
 	IntMat subMatrix(rows, columns);
 
-	for (int i = rowStart; i < rowEnd; ++i)
+	for (int i = rowStart; i <= rowEnd; ++i)
 	{
-		std::vector<int> subRow(columns);
-		for (int j = columnStart; j < columnEnd; ++j)
-		{
-			subRow[j-columnStart] = getElement(i, j);
-		}
-		subMatrix.setRow(i, subRow);
+		std::vector<int> subRow = getSubRow(i, columnStart, columnEnd);
+		subMatrix.setRow(i - rowStart, subRow);
 	}
 	return subMatrix;
 }

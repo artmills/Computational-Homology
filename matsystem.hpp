@@ -2,6 +2,7 @@
 #include <cmath>
 #include <limits>
 #include "intmat.hpp"
+#include "rowechelonform.hpp"
 
 
 // responsible for performing operations on matrices. these include:
@@ -61,11 +62,13 @@ public:
 	
 	// algorithm 3.39: put a matrix into row echelon form
 	void RowEchelon(IntMat& B);
-	std::vector<IntMat> GetRowEchelon(IntMat B);
+	RowEchelonForm GetRowEchelon(IntMat B);
 
 
 	// applications of the row echelon form.
 	std::vector<IntMat> KernelImage(IntMat B);
+
+	void PrintVector(std::vector<int> vector);
 
 
 private:
@@ -82,6 +85,4 @@ private:
 
 	
 	// utility:	
-	void PrintVector(std::vector<int> vector);
-
 };
