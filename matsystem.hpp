@@ -68,8 +68,37 @@ public:
 	// applications of the row echelon form.
 	std::vector<IntMat> KernelImage(IntMat B);
 
-	void PrintVector(std::vector<int> vector);
 
+
+	/*********** Preparing for the Smith Normal Form **********/
+
+	// get minimal nonzero in submatrix beginning at row/column k.
+	std::vector<int> MinNonzero(IntMat& B, int k);
+
+	// move minimal nonzero entry to the (k, k) position.
+	void MoveMinNonzero(IntMat& B, IntMat& Q, IntMat& Qinv, IntMat& R, IntMat& Rinv, int k);
+
+	// check whether the (k, k) entry divides all entries in the remaining
+	// submatrix. if not, get the coordinates of the entry that sucks.
+	std::vector<int> CheckForDivisibility(IntMat& B, int k);
+
+	// step one of the Smith normal form procedure.
+	void PartSmithForm(IntMat& B, IntMat& Q, IntMat& Qinv, IntMat& R, IntMat& Rinv, int k);
+
+
+
+
+
+
+
+
+
+
+
+
+
+	// utility:	
+	void PrintVector(std::vector<int> vector);
 
 private:
 	
@@ -84,5 +113,4 @@ private:
 	void ColumnAdd(IntMat& matrix, int targetColumn, int givenColumn, int scalar);
 
 	
-	// utility:	
 };

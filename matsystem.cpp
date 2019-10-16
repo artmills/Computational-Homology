@@ -280,16 +280,108 @@ std::vector<IntMat> MatSystem::KernelImage(IntMat B)
 	IntMat resultPt = Transpose(ref.getQ());
 
 	std::vector<IntMat> kernel_image;
-	IntMat kernel = resultPt.getSubMatrix(0, lastRow, ref.getK(), lastColumn);
+	
+	IntMat kernel = resultPt.getSubMatrix(0, resultPt.getRows() - 1, ref.getK() + 1, resultPt.getColumns() - 1);
+	IntMat image = resultBt.getSubMatrix(0, resultBt.getRows() - 1, 0, ref.getK());
+
 	kernel_image.push_back(kernel);
+	kernel_image.push_back(image);
 	return kernel_image;
 }
 
 
 
 
+/********** Preparing for the Smith Normal Form **********/
+
+std::vector<int> MatSystem::MinNonzero(IntMat& B, int k)
+{
+	int min = std::numeric_limits<int>::max();
+	int row, column;
+
+	// iterate through rows of B.
+	for (int i = k; i < B.getRows(); ++i)
+	{
+		int index = IndexSmallestNonzero(B.getRow(i), k);
+		int candidate = std::abs(B.getElement(i, index));
+		if (candidate < min)
+		{
+			min = candidate;
+			row = i;
+			column = index;
+		}
+	}
+	std::vector<int> element = {row, column};
+	return element;
+}
+
+void MatSystem::MoveMinNonzero(IntMat& B, IntMat& Q, IntMat& Qinv, IntMat& R, IntMat& Rinv, int k)
+{
+	std::vector<int> element = MinNonzero(B, k);
+	RowExchangeOperation(B, Q, Qinv, k, element[0]);
+	ColumnExchangeOperation(B, R, Rinv, k, element[1]);
+}
 
 
+std::vector<int> MatSystem::CheckForDivisibility(IntMat& B, int k)
+{
+	std::vector<int> coordinates(2);
+	for (int i = k + 1; i < B.getRows(); ++i)
+	{
+		for (int j = k + 1; j < B.getColumns(); ++j)
+		{
+			int q = std::floor((float)B.getElement(i, j) / (float)B.getElement(k, k));
+			if (q * B.getElement(k, k) != B.getElement(i, j))
+			{
+				// there is an element that is not divisible by (k, k).
+				// return the coordinates of that point.
+				coordinates = {i, j};
+				return coordinates;
+			}
+		}
+	}
+	// the (k, k) element divides all elements in the submatrix.
+	// return "true".
+	coordinates = {-1, -1};
+	return coordinates;
+}
+
+
+void MatSystem::PartSmithForm(IntMat& B, IntMat& Q, IntMat& Qinv, IntMat& R, IntMat& Rinv, int k)
+{
+	int lastRow = B.getRows() - 1;
+	int lastColumn = B.getColumns() - 1;
+
+	std::vector<int> divisibilityCheck = CheckForDivisibility(B, k);
+	bool isDivisible = (divisibilityCheck[0] == -1)? true : false;
+
+	while (!isDivisible)
+	{
+		MoveMinNonzero(B, Q, Qinv, R, Rinv, k);
+
+		PartRowReduce(B, Q, Qinv, k, k);
+		if (!IsZero(B.getSubColumn(k, k+1, lastRow)))
+		{
+			continue;
+		}
+		
+		//PartColumnReduce(B, R, Rinv, k, k);
+		if (!IsZero(B.getSubRow(k, k+1, lastColumn)))
+		{
+			continue;
+		}
+
+		divisibilityCheck = CheckForDivisibility(B, k);
+		if (divisibilityCheck[0] != -1)
+		{
+			int i = divisibilityCheck[0];
+			int j = divisibilityCheck[1];
+
+			RowAddOperation(B, Q, Qinv, i, k, 0);
+			ColumnAddOperation(B, R, Rinv, k, j, -B.getElement(i, j));
+		}
+	}
+}
 
 
 

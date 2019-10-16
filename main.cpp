@@ -71,13 +71,21 @@ int main()
 	*/
 
 
-	system.RowEchelon(A);
+	//system.RowEchelon(A);
 	A.Print();
 	
 	std::vector<IntMat> kernel_image = system.KernelImage(A);	
 	for (int i = 0; i < kernel_image.size(); ++i)
 	{
-		kernel_image[i].Print();
+//		kernel_image[i].Print();
 	}
+
+	IntMat Q = IntMat::CreateIdentity(A.getRows());
+	system.MoveMinNonzero(A, Q, Q, Q, Q, 0);
+	A.Print();
+
+	A.setElement(0, 0, 12);
+	auto test = system.CheckForDivisibility(A, 0);
+	system.PrintVector(test);
 }
 
