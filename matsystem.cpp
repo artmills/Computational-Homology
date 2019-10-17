@@ -122,7 +122,7 @@ void MatSystem::ColumnAddOperation(IntMat& matrix, IntMat& R, IntMat& Rinverse, 
 {
 	ColumnAdd(matrix, targetColumn, givenColumn, scalar);
 	ColumnAdd(R, targetColumn, givenColumn, scalar);
-	RowAdd(Rinverse, targetColumn, givenColumn, -scalar);
+	RowAdd(Rinverse, givenColumn, targetColumn, -1 * scalar);
 }
 
 
@@ -364,6 +364,17 @@ void MatSystem::PartSmithForm(IntMat& B, IntMat& Q, IntMat& Qinv, IntMat& R, Int
 
 	do 
 	{
+		/*
+		std::cout << std::endl;
+		std::cout << "begin test" << std::endl;
+		R.Print();
+		Rinv.Print();
+		IntMat temp = R * Rinv;
+		temp.Print();
+		std::cout << "end test" << std::endl;
+		std::cout << std::endl;
+		*/
+
 		MoveMinNonzero(B, Q, Qinv, R, Rinv, k);
 
 		PartRowReduce(B, Q, Qinv, k, k);

@@ -92,6 +92,7 @@ int main()
 	std::cout << "Matrix A: " << std::endl;
 	A1.Print();
 
+	
 	IntMat B(3, 3);
 	std::vector<int> Brow0 = {1, 0, 0};
 	std::vector<int> Brow1 = {0, 2, 0};
@@ -110,6 +111,16 @@ int main()
 	R.setRow(1, Rrow1);
 	R.setRow(2, Rrow2);
 	std::cout << "Matrix R: " << std::endl;
+	R.Print();
+
+	IntMat Rinv(3, 3);
+	std::vector<int> Rinvrow1 = {3, 2, 3};
+	std::vector<int> Rinvrow2 = {1, 1, 1};
+	std::vector<int> Rinvrow3 = {0, 0, 1};
+	Rinv.setRow(0, Rinvrow1);
+	Rinv.setRow(1, Rinvrow2);
+	Rinv.setRow(2, Rinvrow3);
+	std::cout << "Matrix Rinv: " << std::endl;
 	R.Print();
 
 	IntMat Q(3, 3);
@@ -142,12 +153,6 @@ int main()
 	{
 		smith[i].Print();
 	}
-
-	
-
-
-
-
 
 
 
