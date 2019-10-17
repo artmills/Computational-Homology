@@ -117,13 +117,12 @@ void MatSystem::RowAddOperation(IntMat& matrix, IntMat& Q, IntMat& Qinverse, int
 	RowAdd(matrix, targetRow, givenRow, scalar);
 	RowAdd(Qinverse, targetRow, givenRow, scalar);
 	ColumnAdd(Q, givenRow, targetRow, -1 * scalar);
-	// TESTING
 }
 void MatSystem::ColumnAddOperation(IntMat& matrix, IntMat& R, IntMat& Rinverse, int targetColumn, int givenColumn, int scalar)
 {
 	ColumnAdd(matrix, targetColumn, givenColumn, scalar);
 	ColumnAdd(R, targetColumn, givenColumn, scalar);
-	RowAdd(Rinverse, targetColumn, givenColumn, -1 * scalar);
+	RowAdd(Rinverse, targetColumn, givenColumn, -scalar);
 }
 
 
@@ -136,6 +135,14 @@ void MatSystem::PartRowReduce(IntMat& B, IntMat& Q, IntMat& Qinv, int k, int l)
 	{
 		int q = std::floor(B.getElement(i, l) / B.getElement(k, l));
 		RowAddOperation(B, Q, Qinv, i, k, -q);
+	}
+}
+void MatSystem::PartColumnReduce(IntMat& B, IntMat& Q, IntMat& Qinv, int k, int l)
+{
+	for (int j = k+1; j < B.getColumns(); ++j)
+	{
+		int q = std::floor(B.getElement(k, j) / B.getElement(k, l));
+		ColumnAddOperation(B, Q, Qinv, j, l, -q);
 	}
 }
 
@@ -355,17 +362,19 @@ void MatSystem::PartSmithForm(IntMat& B, IntMat& Q, IntMat& Qinv, IntMat& R, Int
 	std::vector<int> divisibilityCheck = CheckForDivisibility(B, k);
 	bool isDivisible = (divisibilityCheck[0] == -1)? true : false;
 
-	while (!isDivisible)
+	do 
 	{
 		MoveMinNonzero(B, Q, Qinv, R, Rinv, k);
 
 		PartRowReduce(B, Q, Qinv, k, k);
+
 		if (!IsZero(B.getSubColumn(k, k+1, lastRow)))
 		{
 			continue;
 		}
 		
-		//PartColumnReduce(B, R, Rinv, k, k);
+		PartColumnReduce(B, R, Rinv, k, k);
+
 		if (!IsZero(B.getSubRow(k, k+1, lastColumn)))
 		{
 			continue;
@@ -380,10 +389,100 @@ void MatSystem::PartSmithForm(IntMat& B, IntMat& Q, IntMat& Qinv, IntMat& R, Int
 			RowAddOperation(B, Q, Qinv, i, k, 0);
 			ColumnAddOperation(B, R, Rinv, k, j, -B.getElement(i, j));
 		}
-	}
+		else
+		{
+			isDivisible = true;
+		}
+	} while (!isDivisible);
 }
 
+bool MatSystem::IsZero(IntMat B)
+{
+	for (int i = 0; i < B.getRows(); ++i)
+	{
+		if (!IsZero(B.getRow(i)))
+		{
+			return false;
+		}
+	}
+	return true;
+}
+bool MatSystem::IsZero(IntMat& B)
+{
+	for (int i = 0; i < B.getRows(); ++i)
+	{
+		if (!IsZero(B.getRow(i)))
+		{
+			return false;
+		}
+	}
+	return true;
+}
 
+void MatSystem::SmithForm(IntMat& B)
+{
+	int lastRow = B.getRows() - 1;
+	int lastColumn = B.getColumns() - 1;
+
+	IntMat Q = IntMat::CreateIdentity(lastRow + 1);
+	IntMat Qinv = Q;
+	IntMat R = IntMat::CreateIdentity(lastColumn + 1);
+	IntMat Rinv = R;
+	int s = 0;
+	int t = -1;
+
+	while (!IsZero(B.getSubMatrix(t + 1, lastRow, t + 1, lastColumn)) && t < lastColumn)
+	{
+		++t;
+		PartSmithForm(B, Q, Qinv, R, Rinv, t);
+
+		if (B.getElement(t, t) < 0)
+		{
+			RowMultiplyOperation(B, Q, Qinv, t);
+		}
+
+		if (B.getElement(t, t) == 1)
+		{
+			++s;
+		}
+	}
+}
+std::vector<IntMat> MatSystem::GetSmithForm(IntMat& B)
+{
+	int lastRow = B.getRows() - 1;
+	int lastColumn = B.getColumns() - 1;
+
+	IntMat Q = IntMat::CreateIdentity(lastRow + 1);
+	IntMat Qinv = Q;
+	IntMat R = IntMat::CreateIdentity(lastColumn + 1);
+	IntMat Rinv = R;
+	int s = 0;
+	int t = -1;
+
+	while (!IsZero(B.getSubMatrix(t + 1, lastRow, t + 1, lastColumn)) && t < lastColumn)
+	{
+		++t;
+		PartSmithForm(B, Q, Qinv, R, Rinv, t);
+
+		if (B.getElement(t, t) < 0)
+		{
+			RowMultiplyOperation(B, Q, Qinv, t);
+		}
+
+		if (B.getElement(t, t) == 1)
+		{
+			++s;
+		}
+	}
+
+	std::vector<IntMat> matrices;
+	matrices.push_back(B);
+	matrices.push_back(Q);
+	matrices.push_back(Qinv);
+	matrices.push_back(R);
+	matrices.push_back(Rinv);
+	return matrices;
+}
 
 
 

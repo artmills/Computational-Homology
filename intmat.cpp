@@ -318,6 +318,7 @@ IntMat operator*(IntMat& left, IntMat& right)
 		{
 			for (int j = 0; j < columns; ++j)
 			{
+				//std::cout << i << " " << j << std::endl;
 				// this iteration will fill the (i, j) element of temp
 				// so we need the dot product of the ith row of left
 				// and the jth column of right
@@ -333,6 +334,8 @@ IntMat operator*(IntMat& left, IntMat& right)
 	else
 	{
 		std::cout << "DIMENSION ERROR!" << std::endl;
+		std::cout << "Left: " << leftRows << " " << rows << std::endl;
+		std::cout << "Right: " << columns << " " << rightColumns << std::endl;
 	}
 	return temp;
 }

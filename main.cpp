@@ -72,20 +72,86 @@ int main()
 
 
 	//system.RowEchelon(A);
-	A.Print();
+	//A.Print();
 	
+	/*
 	std::vector<IntMat> kernel_image = system.KernelImage(A);	
 	for (int i = 0; i < kernel_image.size(); ++i)
 	{
-//		kernel_image[i].Print();
+		kernel_image[i].Print();
+	}
+	*/
+
+	IntMat A1(3, 3);
+	std::vector<int> A1row0 = {3, 2, 3};
+	std::vector<int> A1row1 = {0, 2, 0};
+	std::vector<int> A1row2 = {2, 2, 2};
+	A1.setRow(0, A1row0);
+	A1.setRow(1, A1row1);
+	A1.setRow(2, A1row2);
+	std::cout << "Matrix A: " << std::endl;
+	A1.Print();
+
+	IntMat B(3, 3);
+	std::vector<int> Brow0 = {1, 0, 0};
+	std::vector<int> Brow1 = {0, 2, 0};
+	std::vector<int> Brow2 = {0, 0, 0};
+	B.setRow(0, Brow0);
+	B.setRow(1, Brow1);
+	B.setRow(2, Brow2);
+	std::cout << "Matrix B: " << std::endl;
+	B.Print();
+
+	IntMat R(3, 3);
+	std::vector<int> Rrow0 = {1, -2, -1};
+	std::vector<int> Rrow1 = {-1, 3, 0};
+	std::vector<int> Rrow2 = {0, 0, 1};
+	R.setRow(0, Rrow0);
+	R.setRow(1, Rrow1);
+	R.setRow(2, Rrow2);
+	std::cout << "Matrix R: " << std::endl;
+	R.Print();
+
+	IntMat Q(3, 3);
+	std::vector<int> Qrow0 = {1, 0, 0};
+	std::vector<int> Qrow1 = {-2, 3, 1};
+	std::vector<int> Qrow2 = {0, 1, 0};
+	Q.setRow(0, Qrow0);
+	Q.setRow(1, Qrow1);
+	Q.setRow(2, Qrow2);
+	std::cout << "Matrix Q: " << std::endl;
+	Q.Print();
+	
+	IntMat P(3, 3);
+	std::vector<int> Prow0 = {1, 0, 0};
+	std::vector<int> Prow1 = {0, 0, 1};
+	std::vector<int> Prow2 = {2, 1, -3};
+	P.setRow(0, Prow0);
+	P.setRow(1, Prow1);
+	P.setRow(2, Prow2);
+	std::cout << "Matrix P: " << std::endl;
+	P.Print();
+
+	IntMat Qinv = P;
+	std::cout << "Matrix Qinv: " << std::endl;
+	Qinv.Print();
+
+	std::cout << "Smith Normal Form:" << std::endl;
+	std::vector<IntMat> smith = system.GetSmithForm(A1);
+	for (int i = 0; i < smith.size(); ++i)
+	{
+		smith[i].Print();
 	}
 
-	IntMat Q = IntMat::CreateIdentity(A.getRows());
-	system.MoveMinNonzero(A, Q, Q, Q, Q, 0);
-	A.Print();
+	
 
-	A.setElement(0, 0, 12);
-	auto test = system.CheckForDivisibility(A, 0);
-	system.PrintVector(test);
+
+
+
+
+
+
+
+
 }
 

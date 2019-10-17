@@ -41,6 +41,7 @@ public:
 	// for a matrix B that satisfies the (k-1, l-1) criterion of
 	// row echelon form and B[k, l] != 0.
 	void PartRowReduce(IntMat& B, IntMat& Q, IntMat& Qinv, int k, int l);
+	void PartColumnReduce(IntMat& B, IntMat& Q, IntMat& Qinv, int k, int l);
 
 	// algorithm 3.32: find smallest nonzero entry of a vector
 	// returning the INDEX of where that min value is located
@@ -56,6 +57,10 @@ public:
 
 	// utility algorithm to check if an std::vector is zero:
 	bool IsZero(std::vector<int> a);
+
+	// utility algorithm to check if a matrix is zero:
+	bool IsZero(IntMat& B);
+	bool IsZero(IntMat B);
 
 	// algorithm 3.36: row reduce the first column
 	void RowReduce(IntMat& B, IntMat& Q, IntMat& Qinv, int k, int l);
@@ -85,7 +90,9 @@ public:
 	// step one of the Smith normal form procedure.
 	void PartSmithForm(IntMat& B, IntMat& Q, IntMat& Qinv, IntMat& R, IntMat& Rinv, int k);
 
-
+	// full Smith normal form algorithm.
+	void SmithForm(IntMat& B);
+	std::vector<IntMat> GetSmithForm(IntMat& B);
 
 
 
