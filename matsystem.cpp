@@ -338,6 +338,7 @@ std::vector<int> MatSystem::CheckForDivisibility(IntMat& B, int k)
 		for (int j = k + 1; j < B.getColumns(); ++j)
 		{
 			int q = std::floor((float)B.getElement(i, j) / (float)B.getElement(k, k));
+
 			if (q * B.getElement(k, k) != B.getElement(i, j))
 			{
 				// there is an element that is not divisible by (k, k).
@@ -359,52 +360,35 @@ void MatSystem::PartSmithForm(IntMat& B, IntMat& Q, IntMat& Qinv, IntMat& R, Int
 	int lastRow = B.getRows() - 1;
 	int lastColumn = B.getColumns() - 1;
 
-	std::vector<int> divisibilityCheck = CheckForDivisibility(B, k);
-	bool isDivisible = (divisibilityCheck[0] == -1)? true : false;
-
-	do 
+	do
 	{
-		/*
-		std::cout << std::endl;
-		std::cout << "begin test" << std::endl;
-		R.Print();
-		Rinv.Print();
-		IntMat temp = R * Rinv;
-		temp.Print();
-		std::cout << "end test" << std::endl;
-		std::cout << std::endl;
-		*/
-
 		MoveMinNonzero(B, Q, Qinv, R, Rinv, k);
 
 		PartRowReduce(B, Q, Qinv, k, k);
 
-		if (!IsZero(B.getSubColumn(k, k+1, lastRow)))
+		if (k < lastRow && !IsZero(B.getSubColumn(k, k+1, lastRow)))
 		{
 			continue;
 		}
 		
 		PartColumnReduce(B, R, Rinv, k, k);
 
-		if (!IsZero(B.getSubRow(k, k+1, lastColumn)))
+		if (k < lastColumn && !IsZero(B.getSubRow(k, k+1, lastColumn)))
 		{
 			continue;
 		}
 
-		divisibilityCheck = CheckForDivisibility(B, k);
+		std::vector<int> divisibilityCheck = CheckForDivisibility(B, k);
 		if (divisibilityCheck[0] != -1)
 		{
 			int i = divisibilityCheck[0];
 			int j = divisibilityCheck[1];
 
 			RowAddOperation(B, Q, Qinv, i, k, 0);
+
 			ColumnAddOperation(B, R, Rinv, k, j, -B.getElement(i, j));
 		}
-		else
-		{
-			isDivisible = true;
-		}
-	} while (!isDivisible);
+	} while (CheckForDivisibility(B, k)[0] != -1);
 }
 
 bool MatSystem::IsZero(IntMat B)
@@ -442,7 +426,7 @@ void MatSystem::SmithForm(IntMat& B)
 	int s = 0;
 	int t = -1;
 
-	while (!IsZero(B.getSubMatrix(t + 1, lastRow, t + 1, lastColumn)) && t < lastColumn)
+	while (t <= lastRow - 1 && !IsZero(B.getSubMatrix(t + 1, lastRow, t + 1, lastColumn)))	
 	{
 		++t;
 		PartSmithForm(B, Q, Qinv, R, Rinv, t);
@@ -456,7 +440,7 @@ void MatSystem::SmithForm(IntMat& B)
 		{
 			++s;
 		}
-	}
+	} 
 }
 std::vector<IntMat> MatSystem::GetSmithForm(IntMat& B)
 {

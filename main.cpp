@@ -82,6 +82,7 @@ int main()
 	}
 	*/
 
+	/*
 	IntMat A1(3, 3);
 	std::vector<int> A1row0 = {3, 2, 3};
 	std::vector<int> A1row1 = {0, 2, 0};
@@ -153,10 +154,22 @@ int main()
 	{
 		smith[i].Print();
 	}
+	*/
 
+	IntMat X(4, 4);
+	std::vector<int> row0 = {-6, 111, -36, 6};
+	std::vector<int> row1 = {5, -672, 210, 74};
+	std::vector<int> row2 = {0, -255, 81, 24};
+	std::vector<int> row3 = {-7, 255, -81, -10};
+	X.setRow(0, row0);
+	X.setRow(1, row1);
+	X.setRow(2, row2);
+	X.setRow(3, row3);
+	X.Print();
 
-
-
+	system.SmithForm(X);
+	std::cout << "Smith form: " << std::endl;
+	X.Print();
 
 }
 
