@@ -9,14 +9,8 @@
 // * row operations
 // * inversion
 // * ultimately, computing the Smith normal form
-class MatSystem
+namespace MatSystem
 {
-
-public:
-
-	MatSystem();
-	~MatSystem();
-
 	// operations on matrices:
 	IntMat Transpose(IntMat& matrix);
 
@@ -107,8 +101,6 @@ public:
 	// utility:	
 	void PrintVector(std::vector<int> vector);
 
-private:
-	
 	// elementary row operations:
 	void RowExchange(IntMat& matrix, int row1, int row2);
 	void ColumnExchange(IntMat& matrix, int column1, int column2);
@@ -120,4 +112,4 @@ private:
 	void ColumnAdd(IntMat& matrix, int targetColumn, int givenColumn, int scalar);
 
 	
-};
+}

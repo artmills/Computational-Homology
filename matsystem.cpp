@@ -1,10 +1,6 @@
 #include "matsystem.hpp"
 
 
-MatSystem::MatSystem(){}
-MatSystem::~MatSystem(){}
-
-
 /********** Operations on matrices **********/
 
 IntMat MatSystem::Transpose(IntMat& matrix)
