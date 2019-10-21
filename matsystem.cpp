@@ -438,7 +438,7 @@ void MatSystem::SmithForm(IntMat& B)
 		}
 	} 
 }
-std::vector<IntMat> MatSystem::GetSmithForm(IntMat& B)
+Smith MatSystem::GetSmithForm(IntMat& B)
 {
 	int lastRow = B.getRows() - 1;
 	int lastColumn = B.getColumns() - 1;
@@ -466,13 +466,8 @@ std::vector<IntMat> MatSystem::GetSmithForm(IntMat& B)
 		}
 	}
 
-	std::vector<IntMat> matrices;
-	matrices.push_back(B);
-	matrices.push_back(Q);
-	matrices.push_back(Qinv);
-	matrices.push_back(R);
-	matrices.push_back(Rinv);
-	return matrices;
+	Smith snf(B, Q, Qinv, R, Rinv, s, t);
+	return snf;
 }
 
 

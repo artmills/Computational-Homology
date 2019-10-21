@@ -20,4 +20,15 @@ std::vector<IntMat> Homology::KernelImage(IntMat& B)
 	return kernel_image;
 }
 
+IntMat Homology::Solve(IntMat& A, IntMat& b)
+{
+	int lastRow = A.getRows() - 1;
+	Smith snf = MatSystem::GetSmithForm(A);
+	IntMat c = Qinv * b;
+
+	for (int i = 0; i <= t; ++i)
+	{
+			
+	}
+}
 

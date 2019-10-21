@@ -3,6 +3,7 @@
 #include <limits>
 #include "intmat.hpp"
 #include "rowechelonform.hpp"
+#include "smith.hpp"
 
 
 // responsible for performing operations on matrices. these include:
@@ -86,7 +87,7 @@ namespace MatSystem
 
 	// full Smith normal form algorithm.
 	void SmithForm(IntMat& B);
-	std::vector<IntMat> GetSmithForm(IntMat& B);
+	Smith GetSmithForm(IntMat& B);
 
 
 
