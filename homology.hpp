@@ -2,6 +2,8 @@
 
 #include <iostream>
 #include "matsystem.hpp"
+#include "smith.hpp"
+#include "quotient.hpp"
 
 // implements algorithms to analyze matrices representing functions
 // between finitely generated free abelian groups to compute homology
@@ -18,9 +20,14 @@ namespace Homology
 
 	// solve the system Ax=b for x.
 	// solutions do not always exist: return an empty vector if not.
-	IntMat Solve(IntMat& A, IntMat& b);
+	IntMat Solve(IntMat A, IntMat& b);
+	IntMat Solve(IntMat A, std::vector<int>& b);
 
-
+	// given a subgroup H of G with bases W of H and V of G,
+	// get a matrix U that is a basis of G whose first s columns
+	// represent trivial classes. the remaining columns have order
+	// given by the correponding element in the matrix B.
+	Quotient QuotientGroup(IntMat& W, IntMat& V);
 
 
 

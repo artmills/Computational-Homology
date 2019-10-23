@@ -101,16 +101,17 @@ std::vector<int> IntMat::getSubRow(int row, int start, int end)
 	std::vector<int> v;
 	
 	// check if accessing a valid row:
-	if (row > matrix.size() || row < 0)
+	if (row >= matrix.size() || row < 0)
 	{
-		std::cout << "DIMENSION ERROR FOR SUBROW!" << std::endl;
+		std::cout << "INVALID ROW FOR SUBROW!" << std::endl; 
 		return v;
 	}
 
 	// check if accessing the proper columns:
 	if (end < start || start < 0)
 	{
-		std::cout << "DIMENSION ERROR FOR SUBROW!" << std::endl;
+		std::cout << "INDEX ERROR FOR SUBROW!" << std::endl;
+		std::cout << "END = " << end << ". START = " << start << std::endl;
 		return v;
 	}
 	if (end >= matrix[0].size())

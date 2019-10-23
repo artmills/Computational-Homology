@@ -2,7 +2,7 @@ CPPFLAGS=-std=c++17 -g
 
 OBJDIR=obj
 
-SOURCES=main.cpp intmat.cpp matsystem.cpp rowechelonform.cpp homology.cpp
+SOURCES=main.cpp intmat.cpp matsystem.cpp rowechelonform.cpp smith.cpp homology.cpp quotient.cpp
 OBJECTS=$(patsubst %.cpp,$(OBJDIR)/%.o,$(SOURCES))
 
 

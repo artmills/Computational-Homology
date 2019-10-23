@@ -1,4 +1,4 @@
-#include "smithform.hpp"
+#include "smith.hpp"
 
 
 Smith::Smith(IntMat& B, IntMat& Q, IntMat& Qinv, IntMat& R, IntMat& Rinv, int s, int t)
@@ -13,31 +13,31 @@ Smith::Smith(IntMat& B, IntMat& Q, IntMat& Qinv, IntMat& R, IntMat& Rinv, int s,
 }
 Smith::~Smith(){}
 
-IntMat Smith::getB()
+IntMat& Smith::getB()
 {
 	return matrices[0];
 }
-IntMat Smith::getQ()
+IntMat& Smith::getQ()
 {
 	return matrices[1];
 }
-IntMat Smith::getQinv()
+IntMat& Smith::getQinv()
 {
 	return matrices[2];
 }
-IntMat Smith::getR()
+IntMat& Smith::getR()
 {
 	return matrices[3];
 }
-IntMat Smith::getRinv()
+IntMat& Smith::getRinv()
 {
 	return matrices[4];
 }
-int Smith::getS()
+int& Smith::getS()
 {
 	return s;
 }
-int Smith::getT()
+int& Smith::getT()
 {
 	return t;
 }
