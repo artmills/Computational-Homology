@@ -23,28 +23,45 @@ int main()
 {
 	std::cout << std::endl;
 	
-	IntMat A(4, 8);
-	std::vector<int> Arow0 = {1, 2, 6, 3, 8, 9, 3, 8};
-	std::vector<int> Arow1 = {6, 3, 7, 4, 7, 9, 2, 16};
-	std::vector<int> Arow2 = {6, 8, 0, 3, 21, 5, 7, 9};
-	std::vector<int> Arow3 = {6, 8, 4, 2, 4, 65, 7, 1};
+	IntMat A(4, 4);
+	std::vector<int> Arow0 = {1, 2, 6, 3};
+	std::vector<int> Arow1 = {5, 7, 3, 7};
+	std::vector<int> Arow2 = {1, 0, 2, 0};
+	std::vector<int> Arow3 = {1, 4, 8, 2};
 	A.setRow(0, Arow0);
 	A.setRow(1, Arow1);
 	A.setRow(2, Arow2);
 	A.setRow(3, Arow3);
 
-	IntMat B = MatSystem::Transpose(A);
-
-	B.Print();
-	Smith snf = MatSystem::GetSmithForm(B);
+	A.Print();
+	Smith snf = MatSystem::GetSmithForm(A);
+	
+	std::cout << "B:" << std::endl;
 	snf.getB().Print();	
+
+	std::cout << "Q:" << std::endl;
 	snf.getQ().Print();	
+
+	std::cout << "Qinv:" << std::endl;
 	snf.getQinv().Print();	
+
+	std::cout << "R:" << std::endl;
 	snf.getR().Print();	
+
+	std::cout << "Rinv:" << std::endl;
 	snf.getRinv().Print();	
 
-	IntMat temp = B * snf.getR();
-	IntMat s = snf.getQinv() * temp;
-	s.Print();
+	std::cout << "Q * Qinv:" << std::endl;
+	IntMat QQinv = snf.getQ() * snf.getQinv();
+	QQinv.Print();
+
+	std::cout << "R * Rinv:" << std::endl;
+	IntMat RRinv = snf.getR() * snf.getRinv();
+	RRinv.Print();
+
+	std::cout << "Qinv * A * R:" << std::endl;
+	IntMat temp = A * snf.getR();
+	IntMat result = snf.getQinv() * temp;
+	result.Print();
 }
 

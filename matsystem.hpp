@@ -87,7 +87,7 @@ namespace MatSystem
 
 	// full Smith normal form algorithm.
 	void SmithForm(IntMat& B);
-	Smith GetSmithForm(IntMat& B);
+	Smith GetSmithForm(IntMat B);
 
 
 
