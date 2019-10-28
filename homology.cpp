@@ -7,14 +7,14 @@ std::vector<IntMat> Homology::KernelImage(IntMat& B)
 	IntMat Bt = MatSystem::Transpose(B);
 
 	Bt.Print();
-	std::cout << "Computing ref: " << std::endl;
+	//std::cout << "Computing ref: " << std::endl;
 	RowEchelonForm ref = MatSystem::GetRowEchelon(Bt);
 	
 	IntMat resultBt = MatSystem::Transpose(ref.getB());
 	IntMat resultPt = MatSystem::Transpose(ref.getQ());
 
-	resultBt.Print();
-	resultPt.Print();
+	//resultBt.Print();
+	//resultPt.Print();
 
 	std::vector<IntMat> kernel_image;
 	
@@ -131,9 +131,55 @@ Quotient Homology::QuotientGroup(IntMat& W, IntMat& V)
 		A.setColumn(i, soln.getColumn(0));
 	}
 
-	std::cout << "Computing Smith form: " << std::endl;
+	//std::cout << "Computing Smith form: " << std::endl;
 	Smith snf = MatSystem::GetSmithForm(A);
 	IntMat U = W * snf.getQ();
 	Quotient result(U, snf.getB(), snf.getS());
 	return result;
+}
+
+
+// matrices[] is an array of matrix representations of the boundary
+// operator.
+//
+// we will assume that both the first and last elements are the proper
+// zero matrix, representing \partial_0 = 0 and \partial_{n+1} = 0.
+// this means that matrices[size - 1] = \partial_{n+1}.
+// so the last (potentially) nontrivial homology group will be
+// H_n where n = size - 2.
+//
+// to compute the nth homology group, we need 
+// Ker(\partial_n) / \Im(\partial_{n+1})
+// the result of this function is an array of homologies.
+// homology[0] = H_0.
+std::vector<Quotient> Homology::HomologyGroupOfChainComplex(std::vector<IntMat>& matrices)
+{
+	// the last homology group to consider: H_n.
+	int n = matrices.size() - 2;
+
+	// the ith element of the following arrays contains the corresponding
+	// basis for the ith boundary operator.
+	std::vector<IntMat> kernels;
+	std::vector<IntMat> images;
+
+	// handle the cases for the zero matrices separately:
+
+	// first, get the kernels and images of all boundary operators:
+	for (int i = 0; i < n; ++i)
+	{
+		std::vector<IntMat> kernel_image = KernelImage(matrices[i]);
+		kernels.push_back(kernel_image[0]);
+		images.push_back(kernel_image[1]);
+	}
+
+	// this array contains the homologies of the space.
+	std::vector<Quotient> homologies;
+
+	// there are at most matrices.size nontrivial homology groups.
+	for (int i = 0; i < n; ++i)
+	{
+		// compute H_i = Ker_i / Im_{i+1}:
+		homologies.push_back(QuotientGroup(kernels[i], images[i+1]));
+
+	}
 }

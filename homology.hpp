@@ -29,6 +29,10 @@ namespace Homology
 	// given by the correponding element in the matrix B.
 	Quotient QuotientGroup(IntMat& W, IntMat& V);
 
+	// the grand finale: given an array of matrices representing
+	// homomorphisms between finitely generated abelian groups
+	// compute the homology groups.
+	std::vector<Quotient> HomologyGroupOfChainComplex(std::vector<IntMat>& matrices);
 
 
 }

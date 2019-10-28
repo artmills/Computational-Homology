@@ -312,12 +312,13 @@ IntMat operator*(IntMat& left, IntMat& right)
 	int rows = left.getColumns();	
 	int columns = right.getRows();
 	int rightColumns = right.getColumns();
+
 	IntMat temp (leftRows, rightColumns);
 	if (rows == columns)
 	{
-		for (int i = 0; i < rows; ++i)
+		for (int i = 0; i < leftRows; ++i)
 		{
-			for (int j = 0; j < columns; ++j)
+			for (int j = 0; j < rightColumns; ++j)
 			{
 				//std::cout << i << " " << j << std::endl;
 				// this iteration will fill the (i, j) element of temp
