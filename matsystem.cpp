@@ -248,24 +248,65 @@ RowEchelonForm MatSystem::GetRowEchelon(IntMat B)
 	int k = -1;
 	int l = 0;
 
+	bool flag = true;
+
 	while (k < rows - 2)
 	{
-		//std::cout << k+1 << " " << l << std::endl;
 		while ((l < columns) && (IsZero(B.getSubColumn(l, k+1, rows - 1))))
 		{
 			++l;
 		}
 		if (l == columns)
 		{
+			flag = false;
 			break;
 		}
 		++k;
 		RowReduce(B, Q, Qinv, k, l);
+		//std::cout << k << std::endl;
+	}
+	if (flag)
+	{
+		//k = rows - 1;
 	}
 
 	RowEchelonForm ref(B, Q, Qinv, k);
 	return ref;
 }
+/*RowEchelonForm MatSystem::GetRowEchelon(IntMat B)
+{
+	int rows = B.getRows();
+	int columns = B.getColumns();
+	IntMat Q = IntMat::CreateIdentity(rows);
+	IntMat Qinv = Q;
+	int k = -1;
+	int l = 0;
+
+	bool flag = true;
+
+	while (k < rows - 1)
+	{
+		while ((l < columns) && (IsZero(B.getSubColumn(l, k+1, rows - 1))))
+		{
+			++l;
+		}
+		if (l == columns)
+		{
+			flag = false;
+			break;
+		}
+		++k;
+		RowReduce(B, Q, Qinv, k, l);
+		//std::cout << k << std::endl;
+	}
+	if (flag)
+	{
+		//k = rows - 1;
+	}
+
+	RowEchelonForm ref(B, Q, Qinv, k);
+	return ref;
+}*/
 
 
 /********** Applications of row echelon form **********/

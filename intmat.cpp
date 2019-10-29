@@ -205,6 +205,21 @@ IntMat IntMat::CreateIdentity(int rows, int columns)
 	return id;
 }
 
+IntMat IntMat::CreateEmpty()
+{
+	IntMat empty(0, 0);
+	return empty;
+}
+
+bool IntMat::isEmpty()
+{
+	if (matrix.size() == 0)
+	{
+		return true;
+	}
+	return false;
+}
+
 void IntMat::Print()
 {
 	for (int i = 0; i < getRows(); ++i)

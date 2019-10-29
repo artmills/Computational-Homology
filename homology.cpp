@@ -6,23 +6,34 @@ std::vector<IntMat> Homology::KernelImage(IntMat& B)
 	int lastColumn = B.getColumns() - 1;
 	IntMat Bt = MatSystem::Transpose(B);
 
-	Bt.Print();
-	//std::cout << "Computing ref: " << std::endl;
 	RowEchelonForm ref = MatSystem::GetRowEchelon(Bt);
+	ref.getB().Print();
+	std::cout << ref.getK() << std::endl;
+	std::cout << std::endl;
 	
 	IntMat resultBt = MatSystem::Transpose(ref.getB());
 	IntMat resultPt = MatSystem::Transpose(ref.getQ());
-
-	//resultBt.Print();
-	//resultPt.Print();
+	resultPt.Print();
 
 	std::vector<IntMat> kernel_image;
 	
 	IntMat kernel = resultPt.getSubMatrix(0, resultPt.getRows() - 1, ref.getK() + 1, resultPt.getColumns() - 1);
-	IntMat image = resultBt.getSubMatrix(0, resultBt.getRows() - 1, 0, ref.getK());
-
 	kernel_image.push_back(kernel);
-	kernel_image.push_back(image);
+
+	// recall that in ref, the integer k refers to the number of 
+	// nonzero rows of the matrix.
+	// so if k = -1, then all rows are nonzero.
+	// in this case, the image should be trivial.
+	if (ref.getK() != -1)
+	{
+		IntMat image = resultBt.getSubMatrix(0, resultBt.getRows() - 1, 0, ref.getK());
+		kernel_image.push_back(image);
+	}
+	else
+	{
+		kernel_image.push_back(IntMat::CreateEmpty());
+	}
+
 	return kernel_image;
 }
 
@@ -163,14 +174,23 @@ std::vector<Quotient> Homology::HomologyGroupOfChainComplex(std::vector<IntMat>&
 	std::vector<IntMat> images;
 
 	// handle the cases for the zero matrices separately:
+	// expecting the 0th element to be a zero matrix: C_0 \to 0.
+	// so the basis of the kernel of this matrix is Z^{columns}
+	//IntMat zeroChains = IntMat::CreateIdentity(matrices[0].getColumns());
+	//IntMat trivial(1, 1);
+	//kernels.push_back(zeroChains);
+	//images.push_back(trivial);
 
-	// first, get the kernels and images of all boundary operators:
-	for (int i = 0; i < n; ++i)
+	// next, get the kernels and images of interesting boundary operators:
+	for (int i = 0; i < matrices.size(); ++i)
 	{
 		std::vector<IntMat> kernel_image = KernelImage(matrices[i]);
 		kernels.push_back(kernel_image[0]);
 		images.push_back(kernel_image[1]);
 	}
+
+	// the last matrix is a zero matrix: 0 \to C_{n}. 
+	// this matrix has trivial kernel and image.
 
 	// this array contains the homologies of the space.
 	std::vector<Quotient> homologies;

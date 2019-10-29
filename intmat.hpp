@@ -34,11 +34,15 @@ public:
 	IntMat getSubMatrix(int rowStart, int rowEnd, int columnStart, int columnEnd);
 	std::vector<int> getSubRow(int row, int start, int end);
 	std::vector<int> getSubColumn(int column, int start, int end);
+
+	// useful for matrices:
+	bool isEmpty();
 	
 	// utility:
 	void Print();
 	static IntMat CreateIdentity(int size);
 	static IntMat CreateIdentity(int rows, int columns);
+	static IntMat CreateEmpty();
 
 	// matrix ring operations:
 	static IntMat Sum(IntMat& left, IntMat& right);
