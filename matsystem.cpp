@@ -505,7 +505,7 @@ void MatSystem::SmithForm(IntMat& B)
 	IntMat Qinv = Q;
 	IntMat R = IntMat::CreateIdentity(lastColumn + 1);
 	IntMat Rinv = R;
-	int s = 0;
+	int s = -1;
 	int t = -1;
 
 	while (t <= lastRow - 1 && t <= lastColumn - 1 && !IsZero(B.getSubMatrix(t + 1, lastRow, t + 1, lastColumn)))	
@@ -534,7 +534,7 @@ Smith MatSystem::GetSmithForm(IntMat B)
 	IntMat Qinv = Q;
 	IntMat R = IntMat::CreateIdentity(lastColumn + 1);
 	IntMat Rinv = R;
-	int s = 0;
+	int s = -1;
 	int t = -1;
 
 	while (t <= lastRow - 1 && t <= lastColumn - 1 && !IsZero(B.getSubMatrix(t + 1, lastRow, t + 1, lastColumn)))	

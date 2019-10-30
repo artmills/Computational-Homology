@@ -2,39 +2,48 @@
 
 std::vector<IntMat> Homology::KernelImage(IntMat& B)
 {
-	int lastRow = B.getRows() - 1;
 	int lastColumn = B.getColumns() - 1;
-	IntMat Bt = MatSystem::Transpose(B);
+	// we will use the Smith normal form to compute the kernel/image,
+	// rather than just the row echelon form, as suggested by the book.
+	std::vector<IntMat> kernelImage;
 
-	RowEchelonForm ref = MatSystem::GetRowEchelon(Bt);
-	ref.getB().Print();
-	std::cout << ref.getK() << std::endl;
-	std::cout << std::endl;
-	
-	IntMat resultBt = MatSystem::Transpose(ref.getB());
-	IntMat resultPt = MatSystem::Transpose(ref.getQ());
-	resultPt.Print();
+	Smith snf = MatSystem::GetSmithForm(B);
+	int t = snf.getT();
+	IntMat& R = snf.getR();
+	IntMat& Q = snf.getQ();
 
-	std::vector<IntMat> kernel_image;
-	
-	IntMat kernel = resultPt.getSubMatrix(0, resultPt.getRows() - 1, ref.getK() + 1, resultPt.getColumns() - 1);
-	kernel_image.push_back(kernel);
+	// recall that the variable "t" in the Smith form refers to the last
+	// index where the Smith matrix is nonzero.
+	// the columns that are zero after "t" tell us that those last 
+	// columns in the matrix R form a basis for the kernel.
 
-	// recall that in ref, the integer k refers to the number of 
-	// nonzero rows of the matrix.
-	// so if k = -1, then all rows are nonzero.
-	// in this case, the image should be trivial.
-	if (ref.getK() != -1)
+	// in this case, the matrix is full rank and so has trivial kernel.
+	if (t == lastColumn)
 	{
-		IntMat image = resultBt.getSubMatrix(0, resultBt.getRows() - 1, 0, ref.getK());
-		kernel_image.push_back(image);
+		kernelImage.push_back(IntMat::CreateEmpty());
+		kernelImage.push_back(Q);
 	}
+	// the matrix is the zero matrix so the kernel is all of the matrix R.
+	else if (t == 0)
+	{
+		kernelImage.push_back(R);
+		kernelImage.push_back(IntMat::CreateEmpty());
+	}
+	// kernel/image is proper and nontrivial:
 	else
 	{
-		kernel_image.push_back(IntMat::CreateEmpty());
-	}
+		IntMat kernel = R.getSubMatrix(0, R.getRows() - 1, t + 1, lastColumn);
+		IntMat image = Q.getSubMatrix(0, Q.getRows() - 1, 0, t);
 
-	return kernel_image;
+		kernelImage.push_back(kernel);
+		kernelImage.push_back(image);
+	}
+	std::cout << "Kernel: " << std::endl;
+	kernelImage[0].Print();
+	std::cout << "Image: " << std::endl;
+	kernelImage[1].Print();
+
+	return kernelImage;
 }
 
 IntMat Homology::Solve(IntMat A, IntMat& b)
@@ -165,23 +174,12 @@ Quotient Homology::QuotientGroup(IntMat& W, IntMat& V)
 // homology[0] = H_0.
 std::vector<Quotient> Homology::HomologyGroupOfChainComplex(std::vector<IntMat>& matrices)
 {
-	// the last homology group to consider: H_n.
-	int n = matrices.size() - 2;
-
 	// the ith element of the following arrays contains the corresponding
 	// basis for the ith boundary operator.
 	std::vector<IntMat> kernels;
 	std::vector<IntMat> images;
 
-	// handle the cases for the zero matrices separately:
-	// expecting the 0th element to be a zero matrix: C_0 \to 0.
-	// so the basis of the kernel of this matrix is Z^{columns}
-	//IntMat zeroChains = IntMat::CreateIdentity(matrices[0].getColumns());
-	//IntMat trivial(1, 1);
-	//kernels.push_back(zeroChains);
-	//images.push_back(trivial);
-
-	// next, get the kernels and images of interesting boundary operators:
+	// next, get the kernels and images:
 	for (int i = 0; i < matrices.size(); ++i)
 	{
 		std::vector<IntMat> kernel_image = KernelImage(matrices[i]);
@@ -189,17 +187,15 @@ std::vector<Quotient> Homology::HomologyGroupOfChainComplex(std::vector<IntMat>&
 		images.push_back(kernel_image[1]);
 	}
 
-	// the last matrix is a zero matrix: 0 \to C_{n}. 
-	// this matrix has trivial kernel and image.
-
 	// this array contains the homologies of the space.
 	std::vector<Quotient> homologies;
 
 	// there are at most matrices.size nontrivial homology groups.
-	for (int i = 0; i < n; ++i)
+	for (int i = 0; i < matrices.size() - 1; ++i)
 	{
 		// compute H_i = Ker_i / Im_{i+1}:
 		homologies.push_back(QuotientGroup(kernels[i], images[i+1]));
-
 	}
+
+	return homologies;
 }
