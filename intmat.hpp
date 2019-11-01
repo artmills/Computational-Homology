@@ -29,6 +29,7 @@ public:
 	void setElement(int row, int column, int data);
 	std::vector<int> getRow(int row);
 	std::vector<int> getColumn(int column);
+	void MultiplyColumn(int column, int scalar);
 
 	// getters for sub{matrix,column,row}:
 	IntMat getSubMatrix(int rowStart, int rowEnd, int columnStart, int columnEnd);
@@ -47,6 +48,7 @@ public:
 	// matrix ring operations:
 	static IntMat Sum(IntMat& left, IntMat& right);
 	static IntMat Product(IntMat& left, IntMat& right);
+	static void ScalarMultiple(IntMat& matrix, int scalar);
 
 private:
 

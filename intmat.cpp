@@ -90,6 +90,13 @@ std::vector<int> IntMat::getColumn(int column)
 	}
 	return data;
 }
+void IntMat::MultiplyColumn(int column, int scalar)
+{
+	for (int j = 0; j < getRows(); ++j)
+	{
+		matrix[j][column] *= scalar;
+	}
+}
 
 
 
@@ -351,8 +358,20 @@ IntMat operator*(IntMat& left, IntMat& right)
 	else
 	{
 		std::cout << "DIMENSION ERROR!" << std::endl;
-		std::cout << "Left: " << leftRows << " " << rows << std::endl;
-		std::cout << "Right: " << columns << " " << rightColumns << std::endl;
+		std::cout << "LFET: " << leftRows << " " << rows << std::endl;
+		left.Print();
+		std::cout << "RIGHT: " << columns << " " << rightColumns << std::endl;
+		right.Print();
 	}
 	return temp;
+}
+void IntMat::ScalarMultiple(IntMat& matrix, int scalar)
+{
+	for (int i = 0; i < matrix.getRows(); ++i)
+	{
+		for (int j = 0; j < matrix.getColumns(); ++j)
+		{
+			matrix.setElement(i, j, matrix.getElement(i, j) * scalar);
+		}
+	}
 }

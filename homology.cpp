@@ -20,11 +20,16 @@ std::vector<IntMat> Homology::KernelImage(IntMat& B)
 	// in this case, the matrix is full rank and so has trivial kernel.
 	if (t == lastColumn)
 	{
+		//snf.getB().Print();
 		kernelImage.push_back(IntMat::CreateEmpty());
-		kernelImage.push_back(Q);
+		for (int i = 0; i <= t; ++i)
+		{
+			Q.MultiplyColumn(i, snf.getB().getElement(i, i));
+		}
+		kernelImage.push_back(Q.getSubMatrix(0, Q.getRows() - 1, 0, t));
 	}
 	// the matrix is the zero matrix so the kernel is all of the matrix R.
-	else if (t == 0)
+	else if (t == -1)
 	{
 		kernelImage.push_back(R);
 		kernelImage.push_back(IntMat::CreateEmpty());
@@ -34,14 +39,29 @@ std::vector<IntMat> Homology::KernelImage(IntMat& B)
 	{
 		IntMat kernel = R.getSubMatrix(0, R.getRows() - 1, t + 1, lastColumn);
 		IntMat image = Q.getSubMatrix(0, Q.getRows() - 1, 0, t);
+		for (int j = 0; j < image.getColumns(); ++j)
+		{
+			image.MultiplyColumn(j, snf.getB().getElement(j, j));
+		}
 
 		kernelImage.push_back(kernel);
 		kernelImage.push_back(image);
 	}
+
+	/*
+	std::cout << "Given the matrix: " << std::endl;
+	B.Print();
+	std::cout << "Whose Smith form is: " << std::endl;
+	snf.getB().Print();
+	std::cout << "Where Q = " << std::endl;
+	snf.getQ().Print();
+	std::cout << "And where R = " << std::endl;
+	snf.getR().Print();
 	std::cout << "Kernel: " << std::endl;
 	kernelImage[0].Print();
 	std::cout << "Image: " << std::endl;
 	kernelImage[1].Print();
+	*/
 
 	return kernelImage;
 }
@@ -102,7 +122,7 @@ IntMat Homology::Solve(IntMat A, std::vector<int>& b)
 	bVector.setColumn(0, b);
 
 	IntMat c = Qinv * bVector;
-	IntMat result(lastRow + 1, 1);
+	IntMat result(A.getColumns(), 1);
 
 	for (int i = 0; i <= t; ++i)
 	{
@@ -119,7 +139,7 @@ IntMat Homology::Solve(IntMat A, std::vector<int>& b)
 		}
 	}
 
-	for (int i = t+1; i <= lastRow; ++i)
+	for (int i = t+1; i < lastRow; ++i)
 	{
 		if (c.getElement(i, 0) != 0)
 		{
@@ -138,6 +158,15 @@ IntMat Homology::Solve(IntMat A, std::vector<int>& b)
 
 Quotient Homology::QuotientGroup(IntMat& W, IntMat& V)
 {
+	// if V is empty then V is a map from the trivial group.
+	// in this case, the quotient group G/H is just G.
+	if (V.isEmpty())
+	{
+		IntMat empty = IntMat::CreateEmpty();
+		Quotient result(W, empty, 0);
+		return result;
+	}
+
 	int columns = V.getColumns();
 	
 	// rows of A is the rows of V.
@@ -151,22 +180,17 @@ Quotient Homology::QuotientGroup(IntMat& W, IntMat& V)
 		A.setColumn(i, soln.getColumn(0));
 	}
 
-	//std::cout << "Computing Smith form: " << std::endl;
 	Smith snf = MatSystem::GetSmithForm(A);
 	IntMat U = W * snf.getQ();
 	Quotient result(U, snf.getB(), snf.getS());
 	return result;
 }
 
-
 // matrices[] is an array of matrix representations of the boundary
 // operator.
 //
-// we will assume that both the first and last elements are the proper
-// zero matrix, representing \partial_0 = 0 and \partial_{n+1} = 0.
-// this means that matrices[size - 1] = \partial_{n+1}.
-// so the last (potentially) nontrivial homology group will be
-// H_n where n = size - 2.
+// we will assume that the first matrix is \partial_1 and the last matrix
+// is \partial_n, where \partial_{n+1}: {0} \to C_n is the empty matrix.
 //
 // to compute the nth homology group, we need 
 // Ker(\partial_n) / \Im(\partial_{n+1})
@@ -179,6 +203,10 @@ std::vector<Quotient> Homology::HomologyGroupOfChainComplex(std::vector<IntMat>&
 	std::vector<IntMat> kernels;
 	std::vector<IntMat> images;
 
+	// get kernel of d0:
+	IntMat kernel_d0 = MatSystem::GetSmithForm(matrices[0]).getQ();
+	kernels.push_back(kernel_d0);
+
 	// next, get the kernels and images:
 	for (int i = 0; i < matrices.size(); ++i)
 	{
@@ -187,14 +215,18 @@ std::vector<Quotient> Homology::HomologyGroupOfChainComplex(std::vector<IntMat>&
 		images.push_back(kernel_image[1]);
 	}
 
+	// get image of d_{n+1}, which is empty.
+	IntMat empty = IntMat::CreateEmpty();
+	images.push_back(empty);
+
 	// this array contains the homologies of the space.
 	std::vector<Quotient> homologies;
-
+	
 	// there are at most matrices.size nontrivial homology groups.
-	for (int i = 0; i < matrices.size() - 1; ++i)
+	for (int i = 0; i < kernels.size(); ++i)
 	{
 		// compute H_i = Ker_i / Im_{i+1}:
-		homologies.push_back(QuotientGroup(kernels[i], images[i+1]));
+		homologies.push_back(QuotientGroup(kernels[i], images[i]));
 	}
 
 	return homologies;

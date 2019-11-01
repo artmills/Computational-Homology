@@ -64,15 +64,50 @@ int main()
 {
 	std::cout << std::endl;
 	
-	IntMat A = CreateExample5();
-	IntMat P2(1, 3);
-	IntMat P0(3, 1);
-	std::vector<IntMat> boundaryMaps;
-	boundaryMaps.push_back(P0);
-	boundaryMaps.push_back(A);
-	boundaryMaps.push_back(P2);
+	IntMat P1(2, 3);
+	std::vector<int> P1row0 = {1, 1, 0};
+	std::vector<int> P1row1 = {-1, -1, 0};
+	P1.setRow(0, P1row0);
+	P1.setRow(1, P1row1);
 
-	std::vector<Quotient> homologies = Homology::HomologyGroupOfChainComplex(boundaryMaps);
+	IntMat P2(3, 2);
+	std::vector<int> P2row0 = {-1, 1};
+	std::vector<int> P2row1 = {1, -1};
+	std::vector<int> P2row2 = {1, 1};
+	P2.setRow(0, P2row0);
+	P2.setRow(1, P2row1);
+	P2.setRow(2, P2row2);
+
+	P1.Print();
+	P2.Print();
+
+	std::vector<IntMat> matrices = {P1, P2};
+	
+	std::vector<IntMat> ki1 = Homology::KernelImage(P1);
+	std::vector<IntMat> ki2 = Homology::KernelImage(P2);
+
+	/*std::cout << "Partial 1: " << std::endl;
+	ki1[0].Print();
+	ki1[1].Print();
+	std::cout << "Partial 2: " << std::endl;
+	ki2[0].Print();
+	ki2[1].Print();*/
+
+	/*
+	Quotient q = Homology::QuotientGroup(ki1[0], ki2[1]);
+	q.getU().Print();
+	q.getB().Print();
+	std::cout << q.getS() << std::endl;
+	*/
+	std::vector<Quotient> homologies = Homology::HomologyGroupOfChainComplex(matrices);
+	for (int i = 0; i < homologies.size(); ++i)
+	{
+		std::cout << "Homology group H_" << i << std::endl;
+		homologies[i].getU().Print();
+		homologies[i].getB().Print();
+		std::cout << homologies[i].getS() << std::endl;
+		std::cout << std::endl;
+	}
 }
 
 
