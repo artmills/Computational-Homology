@@ -34,5 +34,7 @@ namespace Homology
 	// compute the homology groups.
 	std::vector<Quotient> HomologyGroupOfChainComplex(std::vector<IntMat>& matrices);
 
+	// parse the information given by HomologyGroupOfChainComplex.
+	void AnalyzeHomology(std::vector<Quotient> groups);
 
 }

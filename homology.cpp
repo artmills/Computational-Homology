@@ -163,7 +163,7 @@ Quotient Homology::QuotientGroup(IntMat& W, IntMat& V)
 	if (V.isEmpty())
 	{
 		IntMat empty = IntMat::CreateEmpty();
-		Quotient result(W, empty, 0);
+		Quotient result(W, empty, -1);
 		return result;
 	}
 
@@ -183,6 +183,19 @@ Quotient Homology::QuotientGroup(IntMat& W, IntMat& V)
 	Smith snf = MatSystem::GetSmithForm(A);
 	IntMat U = W * snf.getQ();
 	Quotient result(U, snf.getB(), snf.getS());
+
+	/*
+	std::cout << "Computing " << std::endl;
+	W.Print();
+	std::cout << "quotient by " << std::endl;
+	V.Print();
+	std::cout << "to obtain U = " << std::endl;
+	U.Print();
+	std::cout << "and B = " << std::endl;
+	snf.getB().Print();
+	std::cout << "with s = " << snf.getS() << std::endl;
+	*/
+
 	return result;
 }
 
@@ -230,4 +243,42 @@ std::vector<Quotient> Homology::HomologyGroupOfChainComplex(std::vector<IntMat>&
 	}
 
 	return homologies;
+}
+
+void Homology::AnalyzeHomology(std::vector<Quotient> groups)
+{
+	for (int i = 0; i < groups.size(); ++i)
+	{
+		IntMat& U = groups[i].getU();
+		IntMat& B = groups[i].getB();
+		int& s = groups[i].getS();
+
+		bool trivial = true;
+
+		std::cout << "H_" << i << ": ";
+		// we only care about the elements after s.
+		if (s > -1)
+		{
+			for (int j = s + 1; j < B.getColumns(); ++j)
+			{
+				trivial = false;
+				std::cout << "Z_" << B.getElement(j, j) << " ";
+			}
+		}
+
+		if (!U.isEmpty())
+		{
+			int Z = U.getColumns() - s - 1;
+			if (Z > 0)
+			{
+				trivial = false;
+				std::cout << "Z^" << Z << "." << std::endl;
+			}
+		}
+
+		if (trivial)
+		{
+			std::cout << "0." << std::endl;
+		}
+	}
 }

@@ -558,6 +558,8 @@ Smith MatSystem::GetSmithForm(IntMat B)
 
 		if (B.getElement(t, t) == 1)
 		{
+			//std::cout << "Test: " << std::endl;
+			//B.Print();
 			++s;
 		}
 	}

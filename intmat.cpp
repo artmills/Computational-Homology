@@ -229,13 +229,21 @@ bool IntMat::isEmpty()
 
 void IntMat::Print()
 {
-	for (int i = 0; i < getRows(); ++i)
+	if (isEmpty())
 	{
-		for (int j = 0; j < getColumns(); ++j)
+		std::cout << "[ ]" << std::endl;
+	}
+	else 
+	{
+		for (int i = 0; i < getRows(); ++i)
 		{
-			std::cout << matrix[i][j] << " ";
+			std::cout << "[ ";
+			for (int j = 0; j < getColumns(); ++j)
+			{
+				std::cout << matrix[i][j] << " ";
+			}
+			std::cout << "]" << std::endl;
 		}
-		std::cout << std::endl;
 	}
 	std::cout << std::endl;
 }

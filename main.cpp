@@ -59,11 +59,8 @@ IntMat CreateExample5()
 	A.setRow(2, Arow2);
 	return A;
 }
-
-int main()
+std::vector<IntMat> GetRP2()
 {
-	std::cout << std::endl;
-	
 	IntMat P1(2, 3);
 	std::vector<int> P1row0 = {1, 1, 0};
 	std::vector<int> P1row1 = {-1, -1, 0};
@@ -78,28 +75,92 @@ int main()
 	P2.setRow(1, P2row1);
 	P2.setRow(2, P2row2);
 
-	P1.Print();
-	P2.Print();
+	std::vector<IntMat> matrices = {P1, P2};
+	return matrices;
+}
+std::vector<IntMat> GetTorus()
+{
+	IntMat P1(1, 3);
+	std::vector<int> P1row0 = {0, 0, 0};
+	P1.setRow(0, P1row0);
+
+	IntMat P2(3, 2);
+	std::vector<int> P2row0 = {1, 1};
+	std::vector<int> P2row1 = {1, 1};
+	std::vector<int> P2row2 = {-1, -1};
+	P2.setRow(0, P2row0);
+	P2.setRow(1, P2row1);
+	P2.setRow(2, P2row2);
 
 	std::vector<IntMat> matrices = {P1, P2};
+	return matrices;
+}
+std::vector<IntMat> GetKleinBottle()
+{
+	IntMat P1(1, 3);
+	std::vector<int> P1row0 = {0, 0, 0};
+	P1.setRow(0, P1row0);
+
+	IntMat P2(3, 2);
+	std::vector<int> P2row0 = {1, 1};
+	std::vector<int> P2row1 = {1, -1};
+	std::vector<int> P2row2 = {-1, 1};
+	P2.setRow(0, P2row0);
+	P2.setRow(1, P2row1);
+	P2.setRow(2, P2row2);
+
+	std::vector<IntMat> matrices = {P1, P2};
+	return matrices;
+}
+std::vector<IntMat> GetMagicalTetrahedron()
+{
+	IntMat P1(2, 3);
+	std::vector<int> P1row0 = {1, 0, 0};
+	std::vector<int> P1row1 = {-1, 0, 0};
+	P1.setRow(0, P1row0);
+	P1.setRow(1, P1row1);
+
+	IntMat P2(3, 2);
+	std::vector<int> P2row0 = {0, 0};
+	std::vector<int> P2row1 = {1, 0};
+	std::vector<int> P2row2 = {0, 1};
+	P2.setRow(0, P2row0);
+	P2.setRow(1, P2row1);
+	P2.setRow(2, P2row2);
+
+	IntMat P3(1, 1);
+
+	std::vector<IntMat> matrices = {P1, P2, P3};
+	return matrices;
+}
+std::vector<IntMat> GetParachute()
+{
+	IntMat P1(1, 3);
+	std::vector<int> P1row0 = {0, 0, 0};
+	P1.setRow(0, P1row0);
+
+	IntMat P2(3, 1);
+	std::vector<int> P2row0 = {1};
+	std::vector<int> P2row1 = {1};
+	std::vector<int> P2row2 = {-1};
+	P2.setRow(0, P2row0);
+	P2.setRow(1, P2row1);
+	P2.setRow(2, P2row2);
+
+	std::vector<IntMat> matrices = {P1, P2};
+	return matrices;
+}
+
+
+
+
+int main()
+{
+	std::cout << std::endl;
 	
-	std::vector<IntMat> ki1 = Homology::KernelImage(P1);
-	std::vector<IntMat> ki2 = Homology::KernelImage(P2);
-
-	/*std::cout << "Partial 1: " << std::endl;
-	ki1[0].Print();
-	ki1[1].Print();
-	std::cout << "Partial 2: " << std::endl;
-	ki2[0].Print();
-	ki2[1].Print();*/
-
-	/*
-	Quotient q = Homology::QuotientGroup(ki1[0], ki2[1]);
-	q.getU().Print();
-	q.getB().Print();
-	std::cout << q.getS() << std::endl;
-	*/
+	std::vector<IntMat> matrices = GetParachute();	
 	std::vector<Quotient> homologies = Homology::HomologyGroupOfChainComplex(matrices);
+
 	for (int i = 0; i < homologies.size(); ++i)
 	{
 		std::cout << "Homology group H_" << i << std::endl;
@@ -108,6 +169,8 @@ int main()
 		std::cout << homologies[i].getS() << std::endl;
 		std::cout << std::endl;
 	}
+
+	Homology::AnalyzeHomology(homologies);
 }
 
 
