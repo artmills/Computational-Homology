@@ -4,6 +4,7 @@
 #include "intmat.hpp"
 #include "matsystem.hpp"
 #include "homology.hpp"
+#include "cube.hpp"
 
 
 IntMat CreateExample1()
@@ -171,6 +172,10 @@ int main()
 	}
 
 	Homology::AnalyzeHomology(homologies);
+
+	std::cout << "Testing cubes: " << std::endl;
+	Cube::Interval interval(3, 4);
+	
 }
 
 
