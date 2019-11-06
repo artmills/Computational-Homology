@@ -1,10 +1,12 @@
-#include<iostream>
-#include<vector>
+#include <iostream>
+#include <vector>
+#include <unordered_map>
 
 #include "intmat.hpp"
 #include "matsystem.hpp"
 #include "homology.hpp"
-#include "cube.hpp"
+#include "interval.hpp"
+#include "keyhasher.hpp"
 
 
 IntMat CreateExample1()
@@ -174,8 +176,13 @@ int main()
 	Homology::AnalyzeHomology(homologies);
 
 	std::cout << "Testing cubes: " << std::endl;
-	Cube::Interval interval(3, 4);
+	Interval i1(1);
+	Interval i2(2);
+	Interval i3(1);
 	
+	std::unordered_map<Interval, int, KeyHasher> test = { {i1, 1}, {i2, 2} };
+	test.insert( {i2, 9} );
+	std::cout << test[i2] << std::endl;
 }
 
 

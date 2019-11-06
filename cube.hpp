@@ -1,36 +1,38 @@
 #pragma once
 
-#include <unordered_map>
+#include <vector>
+#include "interval.hpp"
 
-namespace Cube
+// an array of elementary intervals.
+class Cube
 {
 
-// to keep track of orientation, endpoints of elementary intervals need
-// to know whether they are left or right endpoints.
-enum class Endpoint {Left, Right};
+public:
 
-// elementary intervals are hash maps of endpoints.
-struct Interval
-{
-	public:
+	Cube(std::vector<Interval> intervals);
+	Cube();
+	~Cube();
+
+	Interval& operator[](int i);
+	void addInterval(Interval interval);
+
+
+	// the dimension of a cube is the number of non-degenerate intervals
+	// that constitute the cube.
+	// we will keep track of this whenever we add a new interval.
+	int Dimension() const;
 	
-		Interval(int left, int right);
-		~Interval();
+	// the embedding number is the number of intervals constituting the
+	// cube.
+	int EmbeddingNumber() const;
 
-		void setLeft(int data);
-		void setRight(int data);
-		int getLeft();
-		int getRight();
-		bool isDegenerate();
+private:
 
-	private:
+	int Dimension(std::vector<Interval> intervals);
 
-		std::unordered_map<Endpoint, int> endpoints;
+	int dimension;
+	std::vector<Interval> intervals;
+
 };
 
-
-
-
-
-
-}
+bool operator==(const Cube& left, const Cube& right);

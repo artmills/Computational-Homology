@@ -2,7 +2,7 @@ CPPFLAGS=-std=c++17 -g
 
 OBJDIR=obj
 
-SOURCES=main.cpp intmat.cpp matsystem.cpp rowechelonform.cpp smith.cpp homology.cpp quotient.cpp cube.cpp
+SOURCES=main.cpp intmat.cpp matsystem.cpp rowechelonform.cpp smith.cpp homology.cpp quotient.cpp interval.cpp cube.cpp cubicalset.cpp keyhasher.cpp
 OBJECTS=$(patsubst %.cpp,$(OBJDIR)/%.o,$(SOURCES))
 
 

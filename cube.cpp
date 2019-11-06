@@ -1,27 +1,62 @@
 #include "cube.hpp"
 
-Cube::Interval::Interval(int left, int right)
+
+Cube::Cube(std::vector<Interval> intervals)
 {
-	setLeft(left);
-	setRight(right);
+	this->intervals = intervals;
+	this->dimension = Dimension(intervals);
 }
-Cube::Interval::~Interval()
-int Interval::getLeft()
+Cube::Cube(){}
+Cube::~Cube(){}
+
+
+Interval& Cube::operator[](int i)
 {
-	return endpoints.at(Endpoint::Left);
+	return intervals[i];
 }
-int Interval::getRight()
+void Cube::addInterval(Interval interval)
 {
-	return endpoints.at(Endpoint::Right);
+	this->intervals.push_back(interval);
+	if (!(interval.isDegenerate()))
+	{
+		++dimension;
+	}
 }
-void Interval::setLeft(int data)
+
+
+int Cube::Dimension() const
 {
-	endpoints.erase(Endpoint::Left);
-	endpoints.insert(std::pair<Endpoint, int>(Endpoint::Left, data));
+	return this->dimension;
 }
-void Interval::setRight(int data)
+int Cube::Dimension(std::vector<Interval> intervals)
 {
-	endpoints.erase(Endpoint::Right);
-	endpoints.insert(std::pair<Endpoint, int>(Endpoint::Right, data));
+	int dim = 0;
+	for (int i = 0; i < intervals.size(); ++i)
+	{
+		if (!(intervals[i].isDegenerate()))
+		{
+			++dim;
+		}
+	}
+	return dim;
 }
-bool Interval::isDegenerate(){}
+int Cube::EmbeddingNumber() const
+{
+	return intervals.size();
+}
+
+bool operator==(const Cube& left, const Cube& right)
+{
+	// quick check: needs to have the same embedding number and dimension.
+	if (left.EmbeddingNumber() != right.EmbeddingNumber())
+	{
+		return false;
+	}
+	if (left.Dimension() != right.Dimension())
+	{
+		return false;
+	}
+
+	// now the tricky bit. two cubes will be equal if all of their 
+	// intervals are equal.
+}
