@@ -161,20 +161,92 @@ int main()
 {
 	std::cout << std::endl;
 	
-	std::vector<IntMat> matrices = GetParachute();	
+	std::vector<IntMat> matrices = GetRP2();	
 	std::vector<Quotient> homologies = Homology::HomologyGroupOfChainComplex(matrices);
-
+	std::cout << "Homology groups of RP2: " << std::endl;
 	for (int i = 0; i < homologies.size(); ++i)
 	{
 		std::cout << "Homology group H_" << i << std::endl;
+		std::cout << "U = " << std::endl;
 		homologies[i].getU().Print();
+		std::cout << "B = " << std::endl; 
 		homologies[i].getB().Print();
-		std::cout << homologies[i].getS() << std::endl;
+		std::cout << "s = " << homologies[i].getS() << std::endl;
 		std::cout << std::endl;
 	}
-
 	Homology::AnalyzeHomology(homologies);
+	std::cout << std::endl;
+	std::cout << std::endl;
 
+	matrices = GetTorus();	
+	homologies = Homology::HomologyGroupOfChainComplex(matrices);
+	std::cout << "Homology groups of the torus: " << std::endl;
+	for (int i = 0; i < homologies.size(); ++i)
+	{
+		std::cout << "Homology group H_" << i << std::endl;
+		std::cout << "U = " << std::endl;
+		homologies[i].getU().Print();
+		std::cout << "B = " << std::endl; 
+		homologies[i].getB().Print();
+		std::cout << "s = " << homologies[i].getS() << std::endl;
+		std::cout << std::endl;
+	}
+	Homology::AnalyzeHomology(homologies);
+	std::cout << std::endl;
+	std::cout << std::endl;
+
+	matrices = GetKleinBottle();	
+	homologies = Homology::HomologyGroupOfChainComplex(matrices);
+	std::cout << "Homology groups of the Klein bottle: " << std::endl;
+	for (int i = 0; i < homologies.size(); ++i)
+	{
+		std::cout << "Homology group H_" << i << std::endl;
+		std::cout << "U = " << std::endl;
+		homologies[i].getU().Print();
+		std::cout << "B = " << std::endl; 
+		homologies[i].getB().Print();
+		std::cout << "s = " << homologies[i].getS() << std::endl;
+		std::cout << std::endl;
+	}
+	Homology::AnalyzeHomology(homologies);
+	std::cout << std::endl;
+	std::cout << std::endl;
+
+	matrices = GetMagicalTetrahedron();	
+	homologies = Homology::HomologyGroupOfChainComplex(matrices);
+	std::cout << "Homology groups of the identified tetrahedron: " << std::endl;
+	for (int i = 0; i < homologies.size(); ++i)
+	{
+		std::cout << "Homology group H_" << i << std::endl;
+		std::cout << "U = " << std::endl;
+		homologies[i].getU().Print();
+		std::cout << "B = " << std::endl; 
+		homologies[i].getB().Print();
+		std::cout << "s = " << homologies[i].getS() << std::endl;
+		std::cout << std::endl;
+	}
+	Homology::AnalyzeHomology(homologies);
+	std::cout << std::endl;
+	std::cout << std::endl;
+
+	matrices = GetParachute();	
+	homologies = Homology::HomologyGroupOfChainComplex(matrices);
+	std::cout << "Homology groups of the parachute: " << std::endl;
+	for (int i = 0; i < homologies.size(); ++i)
+	{
+		std::cout << "Homology group H_" << i << std::endl;
+		std::cout << "U = " << std::endl;
+		homologies[i].getU().Print();
+		std::cout << "B = " << std::endl; 
+		homologies[i].getB().Print();
+		std::cout << "s = " << homologies[i].getS() << std::endl;
+		std::cout << std::endl;
+	}
+	Homology::AnalyzeHomology(homologies);
+	std::cout << std::endl;
+	std::cout << std::endl;
+
+	/*
 	std::cout << "Testing cubes: " << std::endl;
 	Interval i1(1);
 	Interval i2(2);
@@ -183,6 +255,7 @@ int main()
 	std::unordered_map<Interval, int, KeyHasher> test = { {i1, 1}, {i2, 2} };
 	test.insert( {i2, 9} );
 	std::cout << test[i2] << std::endl;
+	*/
 }
 
 

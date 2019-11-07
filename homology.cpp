@@ -268,17 +268,24 @@ void Homology::AnalyzeHomology(std::vector<Quotient> groups)
 
 		if (!U.isEmpty())
 		{
-			int Z = U.getColumns() - s - 1;
+			int columns = 0;
+			if (!B.isEmpty())
+			{
+				columns = B.getColumns();
+			}
+
+			int Z = U.getColumns() - columns;
 			if (Z > 0)
 			{
 				trivial = false;
-				std::cout << "Z^" << Z << "." << std::endl;
+				std::cout << "Z^" << Z << ".";
 			}
 		}
 
 		if (trivial)
 		{
-			std::cout << "0." << std::endl;
+			std::cout << "0.";
 		}
+		std::cout << std::endl;
 	}
 }
