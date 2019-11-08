@@ -1,9 +1,11 @@
 #pragma once
 
-#include <vector>
+#include <unordered_map>
+#include "keyhasher.hpp"
 #include "cube.hpp"
 
-// an array of cubes.
+// an unordered map of cubes.
+// we use an unordered map so that we can perform set-theoretic unions
 class CubicalSet
 {
 
@@ -13,13 +15,9 @@ public:
 	CubicalSet();
 	~CubicalSet();
 
-	Cube& operator[](int i);
-	void addCube(Cube cubes);
+	std::unordered_map<Cube, int, KeyHasher> cubes;
 
 private:
 
-	int Dimension(std::vector<Cube> cubes);
-
-	std::vector<Cube> cubes;
 
 };

@@ -36,6 +36,11 @@ bool Interval::isDegenerate()
 	return false;
 }
 
+void Interval::Print() const
+{
+	std::cout << "(" << getLeft() << ", " << getRight() << ") " << std::endl;
+}
+
 bool operator==(const Interval& left, const Interval& right)
 {
 	if (left.getLeft() == right.getLeft() && left.getRight() == right.getRight())

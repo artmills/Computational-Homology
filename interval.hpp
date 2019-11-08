@@ -1,24 +1,28 @@
 #pragma once
 
+#include <iostream>
+
 struct Interval
 {
-	public:
+public:
 
-		Interval(int left);
-		Interval(int left, int right);
-		~Interval();
+	Interval(int left);
+	Interval(int left, int right);
+	~Interval();
 
-		int getLeft() const;
-		int getRight() const;
-		void setLeft(int data);
-		void setRight(int data);
-		bool isDegenerate();
+	int getLeft() const;
+	int getRight() const;
+	void setLeft(int data);
+	void setRight(int data);
+	bool isDegenerate();
+
+	void Print() const;
 
 
-	private:
+private:
 
-		int left;
-		int right;
+	int left;
+	int right;
 
 };
 

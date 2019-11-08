@@ -3,17 +3,12 @@
 
 CubicalSet::CubicalSet(std::vector<Cube> cubes)
 {
-	this->cubes = cubes;
+	for (int i = 0; i < cubes.size(); ++i)
+	{
+		std::pair<Cube, int> p = {cubes[i], cubes[i].Dimension()};
+		this->cubes.insert(p);
+	}
 }
 CubicalSet::CubicalSet(){}
 CubicalSet::~CubicalSet(){}
 
-
-Cube& CubicalSet::operator[](int i)
-{
-	return cubes[i];
-}
-void CubicalSet::addCube(Cube cubes)
-{
-	this->cubes.push_back(cubes);
-}

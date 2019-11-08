@@ -13,6 +13,7 @@ public:
 	Cube();
 	~Cube();
 
+	const Interval& operator[](int i) const;
 	Interval& operator[](int i);
 	void addInterval(Interval interval);
 
@@ -25,6 +26,9 @@ public:
 	// the embedding number is the number of intervals constituting the
 	// cube.
 	int EmbeddingNumber() const;
+	int size() const;
+
+	void Print() const;
 
 private:
 

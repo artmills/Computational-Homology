@@ -1,12 +1,15 @@
 #include <iostream>
 #include <vector>
 #include <unordered_map>
+#include <set>
 
 #include "intmat.hpp"
 #include "matsystem.hpp"
 #include "homology.hpp"
 #include "interval.hpp"
 #include "keyhasher.hpp"
+#include "cubicalset.hpp"
+#include "cubesystem.hpp"
 
 
 IntMat CreateExample1()
@@ -154,6 +157,16 @@ std::vector<IntMat> GetParachute()
 	return matrices;
 }
 
+void Print(std::unordered_map<Cube, int, KeyHasher> map)
+{
+	// how to access both keys and values in the unordered map.
+	for (std::pair<Cube, int> element: map)
+	{
+		element.first.Print();
+		//std::cout << element.second << std::endl;
+	}
+}
+
 
 
 
@@ -161,101 +174,44 @@ int main()
 {
 	std::cout << std::endl;
 	
-	std::vector<IntMat> matrices = GetRP2();	
-	std::vector<Quotient> homologies = Homology::HomologyGroupOfChainComplex(matrices);
-	std::cout << "Homology groups of RP2: " << std::endl;
-	for (int i = 0; i < homologies.size(); ++i)
-	{
-		std::cout << "Homology group H_" << i << std::endl;
-		std::cout << "U = " << std::endl;
-		homologies[i].getU().Print();
-		std::cout << "B = " << std::endl; 
-		homologies[i].getB().Print();
-		std::cout << "s = " << homologies[i].getS() << std::endl;
-		std::cout << std::endl;
-	}
-	Homology::AnalyzeHomology(homologies);
-	std::cout << std::endl;
+	std::cout << "Testing cubes: " << std::endl;
+
+	Cube cube1;
+	cube1.addInterval(Interval(1));
+	cube1.addInterval(Interval(6));
+	cube1.addInterval(Interval(8));
+	cube1.addInterval(Interval(9));
+	std::cout << "Cube 1: " << std::endl;
+	cube1.Print();
 	std::cout << std::endl;
 
-	matrices = GetTorus();	
-	homologies = Homology::HomologyGroupOfChainComplex(matrices);
-	std::cout << "Homology groups of the torus: " << std::endl;
-	for (int i = 0; i < homologies.size(); ++i)
-	{
-		std::cout << "Homology group H_" << i << std::endl;
-		std::cout << "U = " << std::endl;
-		homologies[i].getU().Print();
-		std::cout << "B = " << std::endl; 
-		homologies[i].getB().Print();
-		std::cout << "s = " << homologies[i].getS() << std::endl;
-		std::cout << std::endl;
-	}
-	Homology::AnalyzeHomology(homologies);
-	std::cout << std::endl;
-	std::cout << std::endl;
+	Cube cube2;
+	cube2.addInterval(Interval(1));
+	cube2.addInterval(Interval(3));
+	cube2.addInterval(Interval(8));
+	cube2.addInterval(Interval(9));
+	//std::cout << "Cube 2: " << std::endl;
+	//cube2.Print();
+	//std::cout << std::endl;
 
-	matrices = GetKleinBottle();	
-	homologies = Homology::HomologyGroupOfChainComplex(matrices);
-	std::cout << "Homology groups of the Klein bottle: " << std::endl;
-	for (int i = 0; i < homologies.size(); ++i)
-	{
-		std::cout << "Homology group H_" << i << std::endl;
-		std::cout << "U = " << std::endl;
-		homologies[i].getU().Print();
-		std::cout << "B = " << std::endl; 
-		homologies[i].getB().Print();
-		std::cout << "s = " << homologies[i].getS() << std::endl;
-		std::cout << std::endl;
-	}
-	Homology::AnalyzeHomology(homologies);
-	std::cout << std::endl;
-	std::cout << std::endl;
+	
+	std::vector<Cube> cubes = {cube1, cube2};
+	CubicalSet K(cubes);
 
-	matrices = GetMagicalTetrahedron();	
-	homologies = Homology::HomologyGroupOfChainComplex(matrices);
-	std::cout << "Homology groups of the identified tetrahedron: " << std::endl;
-	for (int i = 0; i < homologies.size(); ++i)
-	{
-		std::cout << "Homology group H_" << i << std::endl;
-		std::cout << "U = " << std::endl;
-		homologies[i].getU().Print();
-		std::cout << "B = " << std::endl; 
-		homologies[i].getB().Print();
-		std::cout << "s = " << homologies[i].getS() << std::endl;
-		std::cout << std::endl;
-	}
-	Homology::AnalyzeHomology(homologies);
-	std::cout << std::endl;
-	std::cout << std::endl;
 
-	matrices = GetParachute();	
-	homologies = Homology::HomologyGroupOfChainComplex(matrices);
-	std::cout << "Homology groups of the parachute: " << std::endl;
-	for (int i = 0; i < homologies.size(); ++i)
-	{
-		std::cout << "Homology group H_" << i << std::endl;
-		std::cout << "U = " << std::endl;
-		homologies[i].getU().Print();
-		std::cout << "B = " << std::endl; 
-		homologies[i].getB().Print();
-		std::cout << "s = " << homologies[i].getS() << std::endl;
-		std::cout << std::endl;
-	}
-	Homology::AnalyzeHomology(homologies);
+	std::unordered_map<Cube, int, KeyHasher> faces = CubeSystem::PrimaryFaces(cube1);
 	std::cout << std::endl;
-	std::cout << std::endl;
+	Print(faces);
 
 	/*
-	std::cout << "Testing cubes: " << std::endl;
-	Interval i1(1);
-	Interval i2(2);
-	Interval i3(1);
-	
-	std::unordered_map<Interval, int, KeyHasher> test = { {i1, 1}, {i2, 2} };
-	test.insert( {i2, 9} );
-	std::cout << test[i2] << std::endl;
+	std::unordered_map<Cube, int, KeyHasher> test = { {cube1, 1}, {cube2, 2} };
+	// how to update the value of a key in the unordered map.
+	test[cube2] = 7;
+
 	*/
+
+
+	std::cout << std::endl;
 }
 
 
