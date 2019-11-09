@@ -14,6 +14,7 @@ public:
 	int getRight() const;
 	void setLeft(int data);
 	void setRight(int data);
+	bool isDegenerate() const;
 	bool isDegenerate();
 
 	void Print() const;

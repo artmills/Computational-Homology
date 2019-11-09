@@ -6,10 +6,7 @@ Cube::Cube(std::vector<Interval> intervals)
 	this->intervals = intervals;
 	this->dimension = Dimension(intervals);
 }
-Cube::Cube()
-{
-	this->dimension = 0;
-}
+Cube::Cube(){}
 Cube::~Cube(){}
 
 
@@ -47,7 +44,16 @@ void Cube::Print() const
 
 int Cube::Dimension() const
 {
-	return this->dimension;
+	int dim = 0;
+	for (int i = 0; i < intervals.size(); ++i)
+	{
+		if (!(intervals[i].isDegenerate()))
+		{
+			++dim;
+		}
+	}
+	return dim;
+	//return this->dimension;
 }
 int Cube::Dimension(std::vector<Interval> intervals)
 {

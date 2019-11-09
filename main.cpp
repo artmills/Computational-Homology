@@ -10,6 +10,7 @@
 #include "keyhasher.hpp"
 #include "cubicalset.hpp"
 #include "cubesystem.hpp"
+#include "chain.hpp"
 
 
 IntMat CreateExample1()
@@ -163,6 +164,7 @@ void Print(std::unordered_map<Cube, int, KeyHasher> map)
 	for (std::pair<Cube, int> element: map)
 	{
 		element.first.Print();
+		//std::cout << element.first.Dimension() << std::endl;;
 		//std::cout << element.second << std::endl;
 	}
 }
@@ -177,39 +179,49 @@ int main()
 	std::cout << "Testing cubes: " << std::endl;
 
 	Cube cube1;
-	cube1.addInterval(Interval(1));
-	cube1.addInterval(Interval(6));
-	cube1.addInterval(Interval(8));
-	cube1.addInterval(Interval(9));
+	cube1.addInterval(Interval(0, 0));
+	cube1.addInterval(Interval(0));
 	std::cout << "Cube 1: " << std::endl;
 	cube1.Print();
 	std::cout << std::endl;
 
 	Cube cube2;
-	cube2.addInterval(Interval(1));
-	cube2.addInterval(Interval(3));
-	cube2.addInterval(Interval(8));
-	cube2.addInterval(Interval(9));
-	//std::cout << "Cube 2: " << std::endl;
-	//cube2.Print();
-	//std::cout << std::endl;
+	cube2.addInterval(Interval(1, 1));
+	cube2.addInterval(Interval(0));
+	std::cout << "Cube 2: " << std::endl;
+	cube2.Print();
+	std::cout << std::endl;
 
+	Cube cube3;
+	cube3.addInterval(Interval(0));
+	cube3.addInterval(Interval(0, 0));
+	std::cout << "Cube 3: " << std::endl;
+	cube3.Print();
+	std::cout << std::endl;
+
+	Cube cube4;
+	cube4.addInterval(Interval(0));
+	cube4.addInterval(Interval(1, 1));
+	std::cout << "Cube 4: " << std::endl;
+	cube4.Print();
+	std::cout << std::endl;
 	
-	std::vector<Cube> cubes = {cube1, cube2};
+	std::vector<Cube> cubes = {cube1, cube2, cube3, cube4};
 	CubicalSet K(cubes);
 
-
+	/*
 	std::unordered_map<Cube, int, KeyHasher> faces = CubeSystem::PrimaryFaces(cube1);
 	std::cout << std::endl;
 	Print(faces);
-
-	/*
-	std::unordered_map<Cube, int, KeyHasher> test = { {cube1, 1}, {cube2, 2} };
-	// how to update the value of a key in the unordered map.
-	test[cube2] = 7;
-
 	*/
 
+	std::vector<std::unordered_map<Cube, int, KeyHasher>> test = CubeSystem::CubicalChainGroups(K);
+
+	for (int i = 0; i < test.size(); ++i)
+	{
+		std::cout << "Generators of C_" << i << ": " << std::endl;
+		Print(test[i]);
+	}
 
 	std::cout << std::endl;
 }

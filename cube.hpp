@@ -34,7 +34,7 @@ private:
 
 	int Dimension(std::vector<Interval> intervals);
 
-	int dimension;
+	int dimension = 0;
 	std::vector<Interval> intervals;
 
 };

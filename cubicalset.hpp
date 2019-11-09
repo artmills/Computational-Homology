@@ -15,9 +15,18 @@ public:
 	CubicalSet();
 	~CubicalSet();
 
+	// warning: this method pops a RANDOM element from the
+	// cube map!
+	Cube Pop();
+
+	// size of the largest cube.
+	int Dimension();
+
+	bool isEmpty();
 	std::unordered_map<Cube, int, KeyHasher> cubes;
 
 private:
 
+	int dimension = 0;
 
 };

@@ -35,6 +35,14 @@ bool Interval::isDegenerate()
 	}
 	return false;
 }
+bool Interval::isDegenerate() const
+{
+	if (left == right)
+	{
+		return true;
+	}
+	return false;
+}
 
 void Interval::Print() const
 {
