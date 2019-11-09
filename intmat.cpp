@@ -383,3 +383,31 @@ void IntMat::ScalarMultiple(IntMat& matrix, int scalar)
 		}
 	}
 }
+
+bool operator==(IntMat& left, IntMat& right)
+{
+	if (left.getRows() != right.getRows())
+	{
+		return false;
+	}
+	if (left.getColumns() != right.getColumns())
+	{
+		return false;
+	}
+
+	for (int i = 0; i < left.getRows(); ++i)
+	{
+		for (int j = 0; j < left.getColumns(); ++j)
+		{
+			if (left.getElement(i, j) != right.getElement(i, j))
+			{
+				return false;
+			}
+		}
+	}
+	return true;
+}
+bool operator!=(IntMat& left, IntMat& right)
+{
+	return !(left == right);
+}

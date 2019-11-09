@@ -63,6 +63,17 @@ std::unordered_map<Cube, int, KeyHasher> CubeSystem::PrimaryFaces(Cube Q)
 	return faces;
 }
 
+std::vector<Cube> CubeSystem::GetCoordinates(std::unordered_map<Cube, int, KeyHasher> map)
+{
+	std::vector<Cube> cubes;
+	cubes.reserve(map.size());
+	for (auto it : map)
+	{
+		cubes.push_back(it.first);
+	}
+	return cubes;
+}
+
 std::vector<std::unordered_map<Cube, int, KeyHasher>> CubeSystem::CubicalChainGroups(CubicalSet K)
 {
 	//std::cout << "Dimension of the cubical set K: " << K.Dimension() << std::endl;
@@ -105,4 +116,53 @@ std::vector<std::unordered_map<Cube, int, KeyHasher>> CubeSystem::CubicalChainGr
 	return E;
 }
 
+Chain CubeSystem::BoundaryOperator(Cube Q)
+{
+	int sign = 1;
+	Chain c;
 
+	for (int i = 0; i < Q.size(); ++i)
+	{
+		if (!Q[i].isDegenerate())
+		{
+			Cube R = Q;
+			R[i].setLeft(Q[i].getLeft());
+			R[i].setRight(Q[i].getLeft());
+			c[R] = -sign;
+
+			R[i].setLeft(Q[i].getRight());
+			R[i].setRight(Q[i].getRight());
+			c[R] = sign;
+
+			sign = -sign;
+		}
+	}
+
+	return c;
+}
+
+std::vector<IntMat> CubeSystem::BoundaryOperatorMatrix(std::vector<std::vector<Cube>> E)
+{
+	std::vector<IntMat> matrices;
+
+	for (int k = 1; k < E.size(); ++k)
+	{
+		// bd: K_k --> K_{k-1}.
+		int lastRow = E[k-1].size() - 1;
+		int lastColumn = E[k].size() - 1;
+
+		IntMat matrix(lastRow + 1, lastColumn + 1);
+
+		// evaluate the boundary operator on each cube of E[k]:
+		for (int j = 0; j < E[k].size(); ++j)
+		{
+			Chain c = BoundaryOperator(E[k][j]);
+			std::vector<int> column = CanonicalCoordinates(c, E[k-1]);
+			matrix.setColumn(j, column);
+		}
+
+		matrices.push_back(matrix);
+	}
+
+	return matrices;
+}

@@ -64,3 +64,7 @@ IntMat operator+(IntMat& left, IntMat& right);
 
 // matrix multiplication
 IntMat operator*(IntMat& left, IntMat& right);
+
+// equality
+bool operator==(IntMat& left, IntMat& right);
+bool operator!=(IntMat& left, IntMat& right);

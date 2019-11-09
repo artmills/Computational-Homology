@@ -66,6 +66,60 @@ std::vector<IntMat> Homology::KernelImage(IntMat& B)
 	return kernelImage;
 }
 
+IntMat Homology::Solve(IntMat A, std::vector<int>& b)
+{
+	int lastRow = A.getRows() - 1;
+	Smith snf = MatSystem::GetSmithForm(A);
+	IntMat& B = snf.getB();
+	IntMat& Qinv = snf.getQinv();
+	IntMat& R = snf.getR();
+	int& t = snf.getT();	
+
+	IntMat bVector(b.size(), 1);
+	bVector.setColumn(0, b);
+
+	/*
+	std::cout << "Attempting to solve the system: " << std::endl;
+	A.Print();
+	std::cout << "=" << std::endl;
+	bVector.Print();
+	std::cout << "t = " << t << std::endl;
+	*/
+
+	IntMat c = Qinv * bVector;
+	IntMat result(A.getColumns(), 1);
+
+	for (int i = 0; i <= t; ++i)
+	{
+		// check if B(i, i) divides c(i):
+		if (c.getElement(i, 0) % B.getElement(i, i) == 0)
+		{
+			result.setElement(i, 0, c.getElement(i, 0) / B.getElement(i, i));	
+		}
+		else
+		{
+			// failure!
+			std::cout << "NO SOLUTION!" << std::endl;
+			return IntMat(0, 0);
+		}
+	}
+
+	for (int i = t+1; i < A.getColumns(); ++i)
+	{
+		if (c.getElement(i, 0) != 0)
+		{
+			// failure!
+			std::cout << "NO SOLUTION!" << std::endl;
+			return IntMat(0, 0);
+		}
+		else
+		{
+			result.setElement(i, 0, 0);
+		}
+	}
+
+	return R * result;
+}
 IntMat Homology::Solve(IntMat A, IntMat& b)
 {
 	int lastRow = A.getRows() - 1;
@@ -93,7 +147,9 @@ IntMat Homology::Solve(IntMat A, IntMat& b)
 		}
 	}
 
-	for (int i = t+1; i <= lastRow; ++i)
+	// pretty sure that there is a typo in the book.
+	// the book ends this loop at A.getRows(), which is definitely wrong.
+	for (int i = t+1; i < A.getColumns(); ++i)
 	{
 		if (c.getElement(i, 0) != 0)
 		{
@@ -109,6 +165,7 @@ IntMat Homology::Solve(IntMat A, IntMat& b)
 
 	return R * result;
 }
+/*
 IntMat Homology::Solve(IntMat A, std::vector<int>& b)
 {
 	int lastRow = A.getRows() - 1;
@@ -123,6 +180,21 @@ IntMat Homology::Solve(IntMat A, std::vector<int>& b)
 
 	IntMat c = Qinv * bVector;
 	IntMat result(A.getColumns(), 1);
+
+	
+	std::cout << "Solving system using the following: " << std::endl;
+	std::cout << "B = " << std::endl;
+	B.Print();
+	std::cout << "Qinv = " << std::endl;
+	Qinv.Print();
+	std::cout << "R = " << std::endl;
+	R.Print();
+	std::cout << "c = " << std::endl;
+	c.Print();
+	std::cout << "Result = " << std::endl;
+	result.Print();
+	
+
 
 	for (int i = 0; i <= t; ++i)
 	{
@@ -139,8 +211,9 @@ IntMat Homology::Solve(IntMat A, std::vector<int>& b)
 		}
 	}
 
-	for (int i = t+1; i < lastRow; ++i)
+	for (int i = t+1; i <= lastRow; ++i)
 	{
+		std::cout << "i = " << i << std::endl;
 		if (c.getElement(i, 0) != 0)
 		{
 			// failure!
@@ -155,15 +228,29 @@ IntMat Homology::Solve(IntMat A, std::vector<int>& b)
 
 	return R * result;
 }
+*/
 
 Quotient Homology::QuotientGroup(IntMat& W, IntMat& V)
 {
+	/*
+	std::cout << "Computing " << std::endl;
+	W.Print();
+	std::cout << "quotient by " << std::endl;
+	V.Print();
+	*/
 	// if V is empty then V is a map from the trivial group.
 	// in this case, the quotient group G/H is just G.
 	if (V.isEmpty())
 	{
 		IntMat empty = IntMat::CreateEmpty();
 		Quotient result(W, empty, -1);
+		return result;
+	}
+	// if we mod out by everything then the homology group is trivial.
+	if (W == V)
+	{
+		IntMat empty = IntMat::CreateEmpty();
+		Quotient result(empty, empty, -1);
 		return result;
 	}
 
@@ -176,6 +263,14 @@ Quotient Homology::QuotientGroup(IntMat& W, IntMat& V)
 	for (int i = 0; i < columns; ++i)
 	{
 		std::vector<int> b = V.getColumn(i);
+
+		/*
+		std::cout << "Solving the system: W = " << std::endl;
+		W.Print();
+		std::cout << "b = " << std::endl;
+		MatSystem::Print(b);
+		*/
+
 		IntMat soln = Solve(W, b);
 		A.setColumn(i, soln.getColumn(0));
 	}

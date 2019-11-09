@@ -12,3 +12,4 @@
 // C_i(K_i) = 1, and C_i(K_j) = 0 for j != i. 
 // the chain then stores the coefficients a_i as values.
 typedef std::unordered_map<Cube, int, KeyHasher> Chain;
+typedef std::unordered_map<Cube, Chain, KeyHasher> BoundaryMap;

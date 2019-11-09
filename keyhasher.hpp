@@ -25,7 +25,8 @@ public:
 		size_t res = 17;
 		for (int i = 0; i < cube.size(); ++i)
 		{
-			res = res * 31 + std::hash<int>()(cube[i].getLeft());
+			res = res * 31 + std::hash<int>()(cube[i].getLeft()) + i;
+			res = res * 31 + std::hash<int>()(cube[i].getRight()) + i;
 		}
 		return res;
 	}

@@ -576,7 +576,7 @@ Smith MatSystem::GetSmithForm(IntMat B)
 
 /********** Utility **********/
 
-void MatSystem::PrintVector(std::vector<int> vector)
+void MatSystem::Print(std::vector<int> vector)
 {
 	for (int i = 0; i < vector.size(); ++i)
 	{

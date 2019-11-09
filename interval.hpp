@@ -28,3 +28,4 @@ private:
 };
 
 bool operator==(const Interval& left, const Interval& right);
+bool operator!=(const Interval& left, const Interval& right);

@@ -60,3 +60,7 @@ bool operator==(const Interval& left, const Interval& right)
 		return false;
 	}
 }
+bool operator!=(const Interval& left, const Interval& right)
+{
+	return !(left == right);
+}

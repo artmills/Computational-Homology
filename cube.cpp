@@ -32,12 +32,26 @@ void Cube::Print() const
 	for (int i = 0; i < intervals.size() - 1; ++i)
 	{
 		//intervals[i].Print();
-		std::cout << "(" << intervals[i].getLeft() << ", " << intervals[i].getRight() << ") x ";
+		if (intervals[i].isDegenerate())
+		{
+			std::cout << "(" << intervals[i].getLeft() << ") x ";
+		}
+		else
+		{
+			std::cout << "(" << intervals[i].getLeft() << ", " << intervals[i].getRight() << ") x ";
+		}
 	}
 	if (intervals.size() > 0)
 	{
 		Interval last = intervals[intervals.size() - 1];
-		std::cout << "(" << last.getLeft() << ", " << last.getRight() << ")" << std::endl;
+		if (last.isDegenerate())
+		{
+			std::cout << "(" << last.getLeft() << ")" << std::endl;
+		}
+		else
+		{
+			std::cout << "(" << last.getLeft() << ", " << last.getRight() << ")" << std::endl;
+		}
 	}
 }
 
@@ -76,6 +90,31 @@ int Cube::size() const
 	return intervals.size();
 }
 
+// equality for when order of intervals assigned to the cube do not matter.
+bool operator==(const Cube& left, const Cube& right)
+{
+	// quick check: needs to have the same embedding number and dimension.
+	if (left.EmbeddingNumber() != right.EmbeddingNumber())
+	{
+		return false;
+	}
+	if (left.Dimension() != right.Dimension())
+	{
+		return false;
+	}
+
+	// now the tricky bit. two cubes will be equal if all of their 
+	// intervals are equal.
+	for (int i = 0; i < left.size(); ++i)
+	{
+		if (left[i] != right[i])
+		{
+			return false;
+		}
+	}
+	return true;
+}
+/*
 bool operator==(const Cube& left, const Cube& right)
 {
 	// quick check: needs to have the same embedding number and dimension.
@@ -109,3 +148,4 @@ bool operator==(const Cube& left, const Cube& right)
 	}
 	return true;
 }
+*/

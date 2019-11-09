@@ -100,7 +100,7 @@ namespace MatSystem
 
 
 	// utility:	
-	void PrintVector(std::vector<int> vector);
+	void Print(std::vector<int> vector);
 
 	// elementary row operations:
 	void RowExchange(IntMat& matrix, int row1, int row2);
