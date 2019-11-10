@@ -166,3 +166,93 @@ std::vector<IntMat> CubeSystem::BoundaryOperatorMatrix(std::vector<std::vector<C
 
 	return matrices;
 }
+
+void CubeSystem::Homology(CubicalSet K)
+{
+	// get the generators for C_k:
+	std::vector<std::unordered_map<Cube, int, KeyHasher>> chainGroups = CubicalChainGroups(K);
+
+	// convert the generators into coordinates:
+	std::vector<std::vector<Cube>> E;
+	for (int i = 0; i < chainGroups.size(); ++i)
+	{
+		E.push_back(GetCoordinates(chainGroups[i]));
+	}
+
+	// get the boundary operator matrices from the chains:
+	std::vector<IntMat> D = BoundaryOperatorMatrix(E);
+
+	// compute the homology groups:
+	std::vector<Quotient> H = Homology::HomologyGroupOfChainComplex(D);
+
+	// analyze the homology groups:
+	Homology::AnalyzeHomology(H);
+	
+}
+
+/*
+void CubeSystem::Reduce(ChainComplex& E, BoundaryMap& bd, int i, Cube& a, Cube& b)
+{
+	for (Cube cube : E[i + 1])
+	{
+		bd[i+1][cube].erase(b);
+	}
+
+	for (Cube cube : E[i])
+	{
+		if (bd[i][cube].find(a) != bd[i][cube].end())
+		{
+			for (auto it : bd[i][b])
+			{
+				bd[i][cube][it.first] -= bd[i][cube][a] * bd[i][b][a] * bd[i][b][it.first];
+			}
+		}
+	}
+
+	RemoveElementFromVector(E[i], b);		
+	RemoveElementFromVector(E[i - 1], a);		
+	bd[i].erase(b);
+	bd[i-1].erase(a);
+}
+
+void CubeSystem::RemoveElementFromVector(std::vector<Cube>& v, Cube& e)
+{
+	auto it = std::find(v.begin(), v.end(), e);
+
+	// then the item has been found.
+	if (it != v.end())
+	{
+		// swap the found element to the end of the vector and pop it off.
+		std::swap(*it, v.back());
+		v.pop_back();
+	}
+}
+
+void CubeSystem::ReduceChainComplex(ChainComplex& E, BoundaryMap& bd)
+{
+	for (int i = E.size() - 1; i > 0; ++i)
+	{
+		bool found = false;
+		while (!found)
+		{
+			for (Cube b : E[i])
+			{
+				for (Cube a : E[i-1])
+				{
+										
+				}
+			}
+		}
+	}
+}
+
+int CubeSystem::ScalarProduct(Chain& c1, Chain& c2)
+{
+	int product = 0;
+	for (auto it : c1)
+	{
+		product += c2[it.first] * it.second;
+	}
+	return product;
+}
+*/

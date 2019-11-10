@@ -169,20 +169,20 @@ void Print(std::unordered_map<Cube, int, KeyHasher> map)
 	}
 }
 
-std::vector<Cube> Get2DHole()
+std::vector<Cube> Get2DHole(int offset)
 {
 	std::vector<Cube> cubes;
-	for (int i = 0; i < 3; ++i)
+	for (int i = 0; i < 4; ++i)
 	{
-		for (int j = 0; j < 3; ++j)
+		for (int j = 0; j < 4; ++j)
 		{
 			if (i == 1 && j == 1)
 			{
 				continue;
 			}
 			Cube cube;
-			cube.addInterval(i);
-			cube.addInterval(j);
+			cube.addInterval(offset + i);
+			cube.addInterval(offset + j);
 			cubes.push_back(cube);
 		}
 	}
@@ -195,88 +195,15 @@ int main()
 {
 	std::cout << std::endl;
 	
-	std::cout << "Testing cubes: " << std::endl;
+	std::vector<Cube> cubes = Get2DHole(0);
+	std::vector<Cube> cubes2 = Get2DHole(5);
+	cubes.insert(cubes.end(), cubes2.begin(), cubes2.end());
 
-	/*
-	Cube cube1;
-	cube1.addInterval(Interval(0, 0));
-	cube1.addInterval(Interval(0));
-	std::cout << "Cube 1: " << std::endl;
-	cube1.Print();
-	std::cout << std::endl;
-
-	Cube cube2;
-	cube2.addInterval(Interval(1, 1));
-	cube2.addInterval(Interval(0));
-	std::cout << "Cube 2: " << std::endl;
-	cube2.Print();
-	std::cout << std::endl;
-
-	Cube cube3;
-	cube3.addInterval(Interval(0));
-	cube3.addInterval(Interval(0, 0));
-	std::cout << "Cube 3: " << std::endl;
-	cube3.Print();
-	std::cout << std::endl;
-
-	Cube cube4;
-	cube4.addInterval(Interval(0));
-	cube4.addInterval(Interval(1, 1));
-	std::cout << "Cube 4: " << std::endl;
-	cube4.Print();
-	std::cout << std::endl;
-	
-	std::vector<Cube> cubes = {cube1, cube2, cube3, cube4};
-	*/
-
-	Cube cube1;
-	cube1.addInterval(Interval(0));
-	cube1.addInterval(Interval(0));
-	cube1.addInterval(Interval(0));
-	std::cout << "Cube 1: " << std::endl;
-	cube1.Print();
-	std::cout << std::endl;
-
-	std::vector<Cube> cubes = {cube1};
-
-
-	CubicalSet K(Get2DHole());
+	CubicalSet K(cubes);
 
 	std::cout << std::endl;
 
-	std::vector<std::unordered_map<Cube, int, KeyHasher>> test = CubeSystem::CubicalChainGroups(K);
-
-	for (int i = 0; i < test.size(); ++i)
-	{
-		std::cout << "Generators of C_" << i << ": " << std::endl;
-		Print(test[i]);
-		std::cout << std::endl;
-	}
-
-	std::vector<std::vector<Cube>> coordinates;
-	for (int i = 0; i < test.size(); ++i)
-	{
-		coordinates.push_back(CubeSystem::GetCoordinates(test[i]));
-	}
-
-	std::vector<IntMat> matrices = CubeSystem::BoundaryOperatorMatrix(coordinates);
-	for (int i = 0; i < matrices.size(); ++i)
-	{
-		matrices[i].Print();
-	}
-
-	std::cout << std::endl;
-
-	std::vector<Quotient> homologies = Homology::HomologyGroupOfChainComplex(matrices);
-
-	Homology::AnalyzeHomology(homologies);
-
-
-	std::vector<Cube> hole = Get2DHole();
-	for (int i = 0; i < hole.size(); ++i)
-	{
-		hole[i].Print();
-	}
+	CubeSystem::Homology(cubes);
 
 
 

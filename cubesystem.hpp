@@ -3,11 +3,17 @@
 #include <iostream>
 #include <unordered_set>
 #include <vector>
+#include <cmath>
 #include "cube.hpp"
-#include "typedef.hpp"
 #include "keyhasher.hpp"
 #include "cubicalset.hpp"
 #include "intmat.hpp"
+#include "homology.hpp"
+
+typedef std::vector<std::vector<Cube>> ChainComplex;
+typedef std::unordered_map<Cube, int, KeyHasher> Chain;
+typedef std::unordered_map<Cube, Chain, KeyHasher> Boundary;
+typedef std::vector<Boundary> BoundaryMap;
 
 // responsible for performing operations on cubes.
 namespace CubeSystem
@@ -38,7 +44,23 @@ namespace CubeSystem
 	// 3.75: translate the output of the previous function into a matrix.
 	std::vector<IntMat> BoundaryOperatorMatrix(std::vector<std::vector<Cube>> E);
 
+	// THE GRAND FINALE!
+	// 3.78: we won't bother with algorithm 3.77 at the moment.
+	// we're only interested in the orders of the homology groups, not 
+	// the chain bases.
+	void Homology(CubicalSet K); 
+	
+	/*
+	// utility.
+	void RemoveElementFromVector(std::vector<Cube>& v, Cube& e);
 
+	// 4.30: one step of the chain reduction algorithm.
+	// given a reduction pair (a, b) of cubes of dimension (i-1, i).
+	void Reduce(ChainComplex& E, BoundaryMap& Bd, int i, Cube& a, Cube& b); 
 
-
+	// 4.32: perform chain reduction.
+	void ReduceChainComplex(ChainComplex& E, BoundaryMap& bd);
+	
+	int ScalarProduct(Chain& c1, Chain& c2);
+	*/
 }
