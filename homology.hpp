@@ -36,5 +36,6 @@ namespace Homology
 
 	// parse the information given by HomologyGroupOfChainComplex.
 	void AnalyzeHomology(std::vector<Quotient> groups);
+	void AnalyzeHomologyRaw(std::vector<Quotient> groups);
 
 }

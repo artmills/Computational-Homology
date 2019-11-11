@@ -340,6 +340,61 @@ std::vector<Quotient> Homology::HomologyGroupOfChainComplex(std::vector<IntMat>&
 	return homologies;
 }
 
+void Homology::AnalyzeHomologyRaw(std::vector<Quotient> groups)
+{
+	for (int i = 0; i < groups.size(); ++i)
+	{
+		IntMat& U = groups[i].getU();
+		IntMat& B = groups[i].getB();
+		int& s = groups[i].getS();
+
+		std::cout << std::endl;
+		std::cout << std::endl;
+		std::cout << "Matrices to compute H_" << i << ": " << std::endl;
+		U.Print();
+		B.Print();
+		std::cout << s << std::endl;
+		std::cout << std::endl;
+
+		bool trivial = true;
+
+		std::cout << "H_" << i << ": ";
+		// we only care about the elements after s.
+		if (s > -1)
+		{
+			for (int j = s + 1; j < B.getColumns(); ++j)
+			{
+				if (B.getElement(j, j) != 0)
+				{
+					trivial = false;
+					std::cout << "Z_" << B.getElement(j, j) << " ";
+				}
+			}
+		}
+
+		if (!U.isEmpty())
+		{
+			int columns = 0;
+			if (!B.isEmpty())
+			{
+				columns = B.getColumns();
+			}
+
+			int Z = U.getColumns() - columns;
+			if (Z > 0)
+			{
+				trivial = false;
+				std::cout << "Z^" << Z << ".";
+			}
+		}
+
+		if (trivial)
+		{
+			std::cout << "0.";
+		}
+		std::cout << std::endl;
+	}
+}
 void Homology::AnalyzeHomology(std::vector<Quotient> groups)
 {
 	for (int i = 0; i < groups.size(); ++i)
@@ -356,8 +411,11 @@ void Homology::AnalyzeHomology(std::vector<Quotient> groups)
 		{
 			for (int j = s + 1; j < B.getColumns(); ++j)
 			{
-				trivial = false;
-				std::cout << "Z_" << B.getElement(j, j) << " ";
+				if (B.getElement(j, j) != 0)
+				{
+					trivial = false;
+					std::cout << "Z_" << B.getElement(j, j) << " ";
+				}
 			}
 		}
 

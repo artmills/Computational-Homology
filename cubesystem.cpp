@@ -141,6 +141,53 @@ Chain CubeSystem::BoundaryOperator(Cube Q)
 	return c;
 }
 
+BoundaryMap CubeSystem::Boundaries(ChainComplex E)
+{
+	// bd is an arrray where bd[k] is the boundary map from k+1 to k,
+	// since we are skipping zero.
+	BoundaryMap bd(E.size() - 1);
+
+	for (int k = 1; k < E.size(); ++k)
+	{
+		// evaluate the boundary operator on each cube of E[k]:
+		for (int j = 0; j < E[k].size(); ++j)
+		{
+			Cube& e = E[k][j];
+			Chain c = BoundaryOperator(e);
+
+			bd[k-1][e] = c;
+		}
+	}
+
+	return bd;
+}
+
+std::vector<IntMat> CubeSystem::BoundaryOperatorMatrix(std::vector<std::vector<Cube>> E, BoundaryMap bd)
+{
+	std::vector<IntMat> matrices;
+
+	for (int k = 1; k < E.size(); ++k)
+	{
+		// bd: K_k --> K_{k-1}.
+		int lastRow = E[k-1].size() - 1;
+		int lastColumn = E[k].size() - 1;
+
+		IntMat matrix(lastRow + 1, lastColumn + 1);
+
+		// evaluate the boundary operator on each cube of E[k]:
+		for (int j = 0; j < E[k].size(); ++j)
+		{
+			Cube& e = E[k][j];
+			Chain c = bd[k-1][e];
+			std::vector<int> column = CanonicalCoordinates(c, E[k-1]);
+			matrix.setColumn(j, column);
+		}
+
+		matrices.push_back(matrix);
+	}
+
+	return matrices;
+}
 std::vector<IntMat> CubeSystem::BoundaryOperatorMatrix(std::vector<std::vector<Cube>> E)
 {
 	std::vector<IntMat> matrices;
@@ -167,6 +214,44 @@ std::vector<IntMat> CubeSystem::BoundaryOperatorMatrix(std::vector<std::vector<C
 	return matrices;
 }
 
+
+void CubeSystem::Homology(CubicalSet K, bool CCR)
+{
+	// get the generators for C_k:
+	std::vector<std::unordered_map<Cube, int, KeyHasher>> chainGroups = CubicalChainGroups(K);
+
+	// convert the generators into coordinates:
+	std::vector<std::vector<Cube>> E;
+	for (int i = 0; i < chainGroups.size(); ++i)
+	{
+		E.push_back(GetCoordinates(chainGroups[i]));
+	}
+
+	std::vector<IntMat> D;
+	if (CCR)
+	{
+		// get the boundary operators:
+		BoundaryMap bd = Boundaries(E);
+
+		// apply the CCR algorithm:
+		ReduceChainComplex(E, bd);		
+	
+		// get the boundary operator matrices from the chains:
+		D = BoundaryOperatorMatrix(E, bd);
+	}
+	else
+	{
+		// get the boundary operator matrices from the chains:
+		D = BoundaryOperatorMatrix(E);
+	}
+
+	// compute the homology groups:
+	std::vector<Quotient> H = Homology::HomologyGroupOfChainComplex(D);
+
+	// analyze the homology groups:
+	Homology::AnalyzeHomology(H);
+}
+/*
 void CubeSystem::Homology(CubicalSet K)
 {
 	// get the generators for C_k:
@@ -187,32 +272,33 @@ void CubeSystem::Homology(CubicalSet K)
 
 	// analyze the homology groups:
 	Homology::AnalyzeHomology(H);
-	
 }
+*/
 
-/*
+
 void CubeSystem::Reduce(ChainComplex& E, BoundaryMap& bd, int i, Cube& a, Cube& b)
 {
-	for (Cube cube : E[i + 1])
-	{
-		bd[i+1][cube].erase(b);
-	}
-
+	//std::cout << "i = " << i << std::endl;
 	for (Cube cube : E[i])
 	{
-		if (bd[i][cube].find(a) != bd[i][cube].end())
+		bd[i-1][cube].erase(b);
+	}
+
+	for (Cube cube : E[i-1])
+	{
+		if (bd[i-2][cube].find(a) != bd[i-2][cube].end())
 		{
-			for (auto it : bd[i][b])
+			for (auto it : bd[i-1][b])
 			{
-				bd[i][cube][it.first] -= bd[i][cube][a] * bd[i][b][a] * bd[i][b][it.first];
+				bd[i-1][cube][it.first] -= bd[i-1][cube][a] * bd[i-1][b][a] * bd[i-1][b][it.first];
 			}
 		}
 	}
 
 	RemoveElementFromVector(E[i], b);		
 	RemoveElementFromVector(E[i - 1], a);		
-	bd[i].erase(b);
-	bd[i-1].erase(a);
+	bd[i-1].erase(b);
+	bd[i-2].erase(a);
 }
 
 void CubeSystem::RemoveElementFromVector(std::vector<Cube>& v, Cube& e)
@@ -230,16 +316,34 @@ void CubeSystem::RemoveElementFromVector(std::vector<Cube>& v, Cube& e)
 
 void CubeSystem::ReduceChainComplex(ChainComplex& E, BoundaryMap& bd)
 {
-	for (int i = E.size() - 1; i > 0; ++i)
+	for (int i = E.size() - 1; i > 1; --i)
 	{
 		bool found = false;
 		while (!found)
 		{
+			//std::cout << "i = " << i << std::endl;
 			for (Cube b : E[i])
 			{
 				for (Cube a : E[i-1])
 				{
-										
+					if (bd[i-1].find(b) != bd[i-1].end())
+					{
+						if (bd[i-1][b].find(a) != bd[i-1][b].end())
+						{
+							if (std::abs(bd[i-1][b][a] == 1))
+							{
+								/*
+								std::cout << "Reducing: " << std::endl;
+								a.Print();
+								b.Print();
+								*/
+
+								Reduce(E, bd, i, a, b);
+								found = true;
+								break;
+							}
+						}
+					}
 				}
 			}
 		}
@@ -255,4 +359,4 @@ int CubeSystem::ScalarProduct(Chain& c1, Chain& c2)
 	}
 	return product;
 }
-*/
+

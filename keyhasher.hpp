@@ -25,8 +25,11 @@ public:
 		size_t res = 17;
 		for (int i = 0; i < cube.size(); ++i)
 		{
+			std::cout << res << std::endl;
 			res = res * 31 + std::hash<int>()(cube[i].getLeft()) + i;
+			std::cout << res << std::endl;
 			res = res * 31 + std::hash<int>()(cube[i].getRight()) + i;
+			std::cout << res << std::endl;
 		}
 		return res;
 	}

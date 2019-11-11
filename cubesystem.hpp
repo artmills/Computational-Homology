@@ -41,16 +41,22 @@ namespace CubeSystem
 	// the next algorithm will put this chain into the form of a matrix.
 	Chain BoundaryOperator(Cube Q);
 
+	// testing: get an array of boundary operators to use for the
+	// reduction algorithm.
+	BoundaryMap Boundaries(ChainComplex E);
+
 	// 3.75: translate the output of the previous function into a matrix.
 	std::vector<IntMat> BoundaryOperatorMatrix(std::vector<std::vector<Cube>> E);
+	std::vector<IntMat> BoundaryOperatorMatrix(std::vector<std::vector<Cube>> E, BoundaryMap bd);
+
+	std::vector<IntMat> GetBoundaryOperatorMatrices(ChainComplex E, BoundaryMap bd);
 
 	// THE GRAND FINALE!
 	// 3.78: we won't bother with algorithm 3.77 at the moment.
 	// we're only interested in the orders of the homology groups, not 
 	// the chain bases.
-	void Homology(CubicalSet K); 
+	void Homology(CubicalSet K, bool CCR); 
 	
-	/*
 	// utility.
 	void RemoveElementFromVector(std::vector<Cube>& v, Cube& e);
 
@@ -62,5 +68,4 @@ namespace CubeSystem
 	void ReduceChainComplex(ChainComplex& E, BoundaryMap& bd);
 	
 	int ScalarProduct(Chain& c1, Chain& c2);
-	*/
 }

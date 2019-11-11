@@ -93,6 +93,14 @@ int Cube::size() const
 // equality for when order of intervals assigned to the cube do not matter.
 bool operator==(const Cube& left, const Cube& right)
 {
+	/*
+	std::cout << std::endl;
+	std::cout << "Comparing: " << std::endl;
+	left.Print();
+	right.Print();
+	std::cout << std::endl;
+	*/
+
 	// quick check: needs to have the same embedding number and dimension.
 	if (left.EmbeddingNumber() != right.EmbeddingNumber())
 	{
