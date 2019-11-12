@@ -3,6 +3,7 @@
 #include <unordered_map>
 #include <chrono>
 
+
 #include "intmat.hpp"
 #include "matsystem.hpp"
 #include "homology.hpp"
@@ -10,7 +11,6 @@
 #include "keyhasher.hpp"
 #include "cubicalset.hpp"
 #include "cubesystem.hpp"
-
 
 IntMat CreateExample1()
 {
@@ -171,9 +171,9 @@ void Print(std::unordered_map<Cube, int, KeyHasher> map)
 std::vector<Cube> Get2DHole(int offset)
 {
 	std::vector<Cube> cubes;
-	for (int i = 0; i < 10; ++i)
+	for (int i = 0; i < 2; ++i)
 	{
-		for (int j = 0; j < 10; ++j)
+		for (int j = 0; j < 2; ++j)
 		{
 			if (i == j)
 			{
@@ -189,43 +189,41 @@ std::vector<Cube> Get2DHole(int offset)
 }
 
 
-
 int main()
 {
 	std::cout << std::endl;
 	
 	std::vector<Cube> cubes = Get2DHole(0);
-	std::vector<Cube> cubes2 = Get2DHole(20);
-	cubes.insert(cubes.end(), cubes2.begin(), cubes2.end());
+	//std::vector<Cube> cubes2 = Get2DHole(20);
+	//cubes.insert(cubes.end(), cubes2.begin(), cubes2.end());
 
 	CubicalSet K(cubes);
+	CubicalSet Q = K;
 
 	std::cout << std::endl;
 
 	/*
 	std::cout << "Without CCR: " << std::endl;
 	std::chrono::steady_clock::time_point beginNoCCR = std::chrono::steady_clock::now();
-	CubeSystem::Homology(cubes, false);
+	CubeSystem::Homology(Q, false);
 	std::chrono::steady_clock::time_point endNoCCR = std::chrono::steady_clock::now();
 	*/
 
 	std::cout << std::endl;;
 	std::cout << "With CCR: " << std::endl;
 	std::chrono::steady_clock::time_point beginCCR = std::chrono::steady_clock::now();
-	CubeSystem::Homology(cubes, true);
+	CubeSystem::Homology(K, true);
 	std::chrono::steady_clock::time_point endCCR = std::chrono::steady_clock::now();
 
 	std::cout << std::endl;
 
 	/*
 	std::cout << std::endl;
-	std::cout << "Without CCR: " << std::chrono::duration_cast<std::chrono::microseconds>(endNoCCR - beginNoCCR).count() << "[µs]" << std::endl;
+	std::cout << "Without CCR: " << std::chrono::duration_cast<std::chrono::microseconds>(endNoCCR - beginNoCCR).count() / 1000000.0 << "[s]" << std::endl;
 	*/
 
 	std::cout << std::endl;
-	std::cout << "With CCR: " << std::chrono::duration_cast<std::chrono::microseconds>(endCCR - beginCCR).count() << "[µs]" << std::endl;
-
-
+	std::cout << "With CCR: " << std::chrono::duration_cast<std::chrono::microseconds>(endCCR - beginCCR).count() / 1000000.0 << "[s]" << std::endl;
 
 
 
@@ -234,7 +232,7 @@ int main()
 
 
 
-
+// using CCR, it takes 4599 seconds to do a 20x20 grid, correctly reports H_0 = 1 and H_1 = 18.
 
 
 

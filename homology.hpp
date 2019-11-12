@@ -1,6 +1,8 @@
 #pragma once
 
 #include <iostream>
+#include <chrono>
+
 #include "matsystem.hpp"
 #include "smith.hpp"
 #include "quotient.hpp"

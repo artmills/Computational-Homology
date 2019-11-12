@@ -1,7 +1,7 @@
 #include "cubesystem.hpp"
 
 
-std::vector<int> CubeSystem::CanonicalCoordinates(Chain c, std::vector<Cube> cubes)
+std::vector<int> CubeSystem::CanonicalCoordinates(Chain& c, std::vector<Cube>& cubes)
 {
 	std::vector<int> v;
 
@@ -24,7 +24,7 @@ std::vector<int> CubeSystem::CanonicalCoordinates(Chain c, std::vector<Cube> cub
 	return v;
 }
 
-Chain CubeSystem::ChainFromCanonicalCoordinates(std::vector<int> v, std::vector<Cube> cubes)
+Chain CubeSystem::ChainFromCanonicalCoordinates(std::vector<int>& v, std::vector<Cube>& cubes)
 {
 	Chain c;
 	for (int i = 0; i < cubes.size(); ++i)
@@ -38,7 +38,7 @@ Chain CubeSystem::ChainFromCanonicalCoordinates(std::vector<int> v, std::vector<
 }
 
 
-std::unordered_map<Cube, int, KeyHasher> CubeSystem::PrimaryFaces(Cube Q)
+std::unordered_map<Cube, int, KeyHasher> CubeSystem::PrimaryFaces(Cube& Q)
 {
 	std::unordered_map<Cube, int, KeyHasher> faces;
 
@@ -63,7 +63,7 @@ std::unordered_map<Cube, int, KeyHasher> CubeSystem::PrimaryFaces(Cube Q)
 	return faces;
 }
 
-std::vector<Cube> CubeSystem::GetCoordinates(std::unordered_map<Cube, int, KeyHasher> map)
+std::vector<Cube> CubeSystem::GetCoordinates(std::unordered_map<Cube, int, KeyHasher>& map)
 {
 	std::vector<Cube> cubes;
 	cubes.reserve(map.size());
@@ -74,7 +74,7 @@ std::vector<Cube> CubeSystem::GetCoordinates(std::unordered_map<Cube, int, KeyHa
 	return cubes;
 }
 
-std::vector<std::unordered_map<Cube, int, KeyHasher>> CubeSystem::CubicalChainGroups(CubicalSet K)
+std::vector<std::unordered_map<Cube, int, KeyHasher>> CubeSystem::CubicalChainGroups(CubicalSet& K)
 {
 	//std::cout << "Dimension of the cubical set K: " << K.Dimension() << std::endl;
 	std::vector<std::unordered_map<Cube, int, KeyHasher>> E(K.Dimension() + 1);	
@@ -116,7 +116,7 @@ std::vector<std::unordered_map<Cube, int, KeyHasher>> CubeSystem::CubicalChainGr
 	return E;
 }
 
-Chain CubeSystem::BoundaryOperator(Cube Q)
+Chain CubeSystem::BoundaryOperator(Cube& Q)
 {
 	int sign = 1;
 	Chain c;
@@ -141,7 +141,7 @@ Chain CubeSystem::BoundaryOperator(Cube Q)
 	return c;
 }
 
-BoundaryMap CubeSystem::Boundaries(ChainComplex E)
+BoundaryMap CubeSystem::Boundaries(ChainComplex& E)
 {
 	// bd is an arrray where bd[k] is the boundary map from k+1 to k,
 	// since we are skipping zero.
@@ -162,7 +162,7 @@ BoundaryMap CubeSystem::Boundaries(ChainComplex E)
 	return bd;
 }
 
-std::vector<IntMat> CubeSystem::BoundaryOperatorMatrix(std::vector<std::vector<Cube>> E, BoundaryMap bd)
+std::vector<IntMat> CubeSystem::BoundaryOperatorMatrix(std::vector<std::vector<Cube>>& E, BoundaryMap& bd)
 {
 	std::vector<IntMat> matrices;
 
@@ -188,7 +188,7 @@ std::vector<IntMat> CubeSystem::BoundaryOperatorMatrix(std::vector<std::vector<C
 
 	return matrices;
 }
-std::vector<IntMat> CubeSystem::BoundaryOperatorMatrix(std::vector<std::vector<Cube>> E)
+std::vector<IntMat> CubeSystem::BoundaryOperatorMatrix(std::vector<std::vector<Cube>>& E)
 {
 	std::vector<IntMat> matrices;
 
@@ -215,65 +215,76 @@ std::vector<IntMat> CubeSystem::BoundaryOperatorMatrix(std::vector<std::vector<C
 }
 
 
-void CubeSystem::Homology(CubicalSet K, bool CCR)
+void CubeSystem::Homology(CubicalSet& K, bool CCR)
 {
 	// get the generators for C_k:
+	std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
 	std::vector<std::unordered_map<Cube, int, KeyHasher>> chainGroups = CubicalChainGroups(K);
+	std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+	std::cout << "Time to create chain groups: " << std::chrono::duration_cast<std::chrono::microseconds>(end-begin).count() / 1000000.0 << " seconds." << std::endl;
 
+
+	
 	// convert the generators into coordinates:
+	begin = std::chrono::steady_clock::now();
 	std::vector<std::vector<Cube>> E;
 	for (int i = 0; i < chainGroups.size(); ++i)
 	{
 		E.push_back(GetCoordinates(chainGroups[i]));
 	}
+	end = std::chrono::steady_clock::now();
+	std::cout << "Time to convert chains to coordinates: " << std::chrono::duration_cast<std::chrono::microseconds>(end-begin).count() / 1000000.0 << " seconds." << std::endl;
 
 	std::vector<IntMat> D;
 	if (CCR)
 	{
 		// get the boundary operators:
+		begin = std::chrono::steady_clock::now();
 		BoundaryMap bd = Boundaries(E);
+		end = std::chrono::steady_clock::now();
+		std::cout << "Time to create boundary map: " << std::chrono::duration_cast<std::chrono::microseconds>(end-begin).count() / 1000000.0 << " seconds." << std::endl;
 
 		// apply the CCR algorithm:
+		begin = std::chrono::steady_clock::now();
 		ReduceChainComplex(E, bd);		
+		end = std::chrono::steady_clock::now();
+		std::cout << "Time to do CCR: " << std::chrono::duration_cast<std::chrono::microseconds>(end-begin).count() / 1000000.0 << " seconds." << std::endl;
+
 	
 		// get the boundary operator matrices from the chains:
+		begin = std::chrono::steady_clock::now();
 		D = BoundaryOperatorMatrix(E, bd);
+		end = std::chrono::steady_clock::now();
+		std::cout << "Time to get boundary matrices: " << std::chrono::duration_cast<std::chrono::microseconds>(end-begin).count() / 1000000.0 << " seconds." << std::endl;
+		std::cout << "Sizes of the matrices: " << std::endl;
+		for (int i = 0; i < D.size(); ++i)
+		{
+			std::cout << D[i].getRows() << " x " << D[i].getColumns() << std::endl;
+		}
 	}
 	else
 	{
 		// get the boundary operator matrices from the chains:
+		begin = std::chrono::steady_clock::now();
 		D = BoundaryOperatorMatrix(E);
+		end = std::chrono::steady_clock::now();
+		std::cout << "Time to get boundary matrices: " << std::chrono::duration_cast<std::chrono::microseconds>(end-begin).count() / 1000000.0 << " seconds." << std::endl;
+		std::cout << "Sizes of the matrices: " << std::endl;
+		for (int i = 0; i < D.size(); ++i)
+		{
+			std::cout << D[i].getRows() << " x " << D[i].getColumns() << std::endl;
+		}
 	}
 
 	// compute the homology groups:
+	begin = std::chrono::steady_clock::now();
 	std::vector<Quotient> H = Homology::HomologyGroupOfChainComplex(D);
+	end = std::chrono::steady_clock::now();
+	std::cout << "Time to compute homology: " << std::chrono::duration_cast<std::chrono::microseconds>(end-begin).count() / 1000000.0 << " seconds." << std::endl;
 
 	// analyze the homology groups:
 	Homology::AnalyzeHomology(H);
 }
-/*
-void CubeSystem::Homology(CubicalSet K)
-{
-	// get the generators for C_k:
-	std::vector<std::unordered_map<Cube, int, KeyHasher>> chainGroups = CubicalChainGroups(K);
-
-	// convert the generators into coordinates:
-	std::vector<std::vector<Cube>> E;
-	for (int i = 0; i < chainGroups.size(); ++i)
-	{
-		E.push_back(GetCoordinates(chainGroups[i]));
-	}
-
-	// get the boundary operator matrices from the chains:
-	std::vector<IntMat> D = BoundaryOperatorMatrix(E);
-
-	// compute the homology groups:
-	std::vector<Quotient> H = Homology::HomologyGroupOfChainComplex(D);
-
-	// analyze the homology groups:
-	Homology::AnalyzeHomology(H);
-}
-*/
 
 
 void CubeSystem::Reduce(ChainComplex& E, BoundaryMap& bd, int i, Cube& a, Cube& b)

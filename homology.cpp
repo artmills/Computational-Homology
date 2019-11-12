@@ -271,8 +271,11 @@ Quotient Homology::QuotientGroup(IntMat& W, IntMat& V)
 		MatSystem::Print(b);
 		*/
 
+		//std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
 		IntMat soln = Solve(W, b);
 		A.setColumn(i, soln.getColumn(0));
+		//std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+		//std::cout << "Time to solve equation for quotient group: " << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() / 1000000.0 << "seconds. " << std::endl;
 	}
 
 	Smith snf = MatSystem::GetSmithForm(A);
@@ -310,8 +313,9 @@ std::vector<Quotient> Homology::HomologyGroupOfChainComplex(std::vector<IntMat>&
 	// basis for the ith boundary operator.
 	std::vector<IntMat> kernels;
 	std::vector<IntMat> images;
-
+	
 	// get kernel of d0:
+	std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
 	IntMat kernel_d0 = MatSystem::GetSmithForm(matrices[0]).getQ();
 	kernels.push_back(kernel_d0);
 
@@ -322,6 +326,8 @@ std::vector<Quotient> Homology::HomologyGroupOfChainComplex(std::vector<IntMat>&
 		kernels.push_back(kernel_image[0]);
 		images.push_back(kernel_image[1]);
 	}
+	std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+	std::cout << "Time to get kernels and images: " << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() / 1000000.0 << "seconds. " << std::endl;
 
 	// get image of d_{n+1}, which is empty.
 	IntMat empty = IntMat::CreateEmpty();
@@ -331,11 +337,14 @@ std::vector<Quotient> Homology::HomologyGroupOfChainComplex(std::vector<IntMat>&
 	std::vector<Quotient> homologies;
 	
 	// there are at most matrices.size nontrivial homology groups.
+	begin = std::chrono::steady_clock::now();
 	for (int i = 0; i < kernels.size(); ++i)
 	{
 		// compute H_i = Ker_i / Im_{i+1}:
 		homologies.push_back(QuotientGroup(kernels[i], images[i]));
 	}
+	end = std::chrono::steady_clock::now();
+	std::cout << "Time to take quotients: " << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() / 1000000.0 << "seconds. " << std::endl;
 
 	return homologies;
 }
