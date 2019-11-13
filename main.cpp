@@ -192,17 +192,13 @@ std::vector<Cube> Get2DHole(int offset)
 int main()
 {
 	std::cout << std::endl;
-	
-	std::vector<Cube> cubes = Get2DHole(0);
-	//std::vector<Cube> cubes2 = Get2DHole(20);
-	//cubes.insert(cubes.end(), cubes2.begin(), cubes2.end());
 
-	Grid grid(20, 20);		
-	Landscape::RandomFill(grid, 7);
+	/*
+	Grid grid(10, 10);		
+	Landscape::RandomFill(grid, 50);
 	grid.Print();
 	CubicalSet K = CubeSystem::GetCubicalSet(grid);
 
-	//CubicalSet K(cubes);
 	CubicalSet Q = K;
 
 	std::cout << std::endl;
@@ -219,8 +215,10 @@ int main()
 	CubeSystem::Homology(K, true);
 	std::chrono::steady_clock::time_point endCCR = std::chrono::steady_clock::now();
 	std::cout << "Total time with CCR: " << std::chrono::duration_cast<std::chrono::microseconds>(endCCR - beginCCR).count() / 1000000.0 << " seconds" << std::endl;
-
+	*/
 	
+	std::vector<IntMat> test = GetRP2();
+	Homology::AnalyzeHomology(Homology::HomologyGroupOfChainComplex(test));
 
 
 	std::cout << std::endl;
