@@ -17,8 +17,14 @@ std::vector<IntMat> Homology::KernelImage(IntMat& B)
 	// the columns that are zero after "t" tell us that those last 
 	// columns in the matrix R form a basis for the kernel.
 
+	// the matrix is the zero matrix so the kernel is all of the matrix R.
+	if (t == -1)
+	{
+		kernelImage.push_back(R);
+		kernelImage.push_back(IntMat::CreateEmpty());
+	}
 	// in this case, the matrix is full rank and so has trivial kernel.
-	if (t == lastColumn)
+	else if (t == lastColumn)
 	{
 		//snf.getB().Print();
 		kernelImage.push_back(IntMat::CreateEmpty());
@@ -27,12 +33,6 @@ std::vector<IntMat> Homology::KernelImage(IntMat& B)
 			Q.MultiplyColumn(i, snf.getB().getElement(i, i));
 		}
 		kernelImage.push_back(Q.getSubMatrix(0, Q.getRows() - 1, 0, t));
-	}
-	// the matrix is the zero matrix so the kernel is all of the matrix R.
-	else if (t == -1)
-	{
-		kernelImage.push_back(R);
-		kernelImage.push_back(IntMat::CreateEmpty());
 	}
 	// kernel/image is proper and nontrivial:
 	else
@@ -255,7 +255,7 @@ Quotient Homology::QuotientGroup(IntMat& W, IntMat& V)
 	}
 
 	int columns = V.getColumns();
-	
+
 	// rows of A is the rows of V.
 	// each iteration of the loop below adds a new column to A.
 	IntMat A(W.getColumns(), V.getColumns()); // n*m matrix.
@@ -327,7 +327,7 @@ std::vector<Quotient> Homology::HomologyGroupOfChainComplex(std::vector<IntMat>&
 		images.push_back(kernel_image[1]);
 	}
 	std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
-	std::cout << "Time to get kernels and images: " << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() / 1000000.0 << "seconds. " << std::endl;
+	std::cout << "Time to get kernels and images: " << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() / 1000000.0 << " seconds. " << std::endl;
 
 	// get image of d_{n+1}, which is empty.
 	IntMat empty = IntMat::CreateEmpty();
@@ -344,7 +344,7 @@ std::vector<Quotient> Homology::HomologyGroupOfChainComplex(std::vector<IntMat>&
 		homologies.push_back(QuotientGroup(kernels[i], images[i]));
 	}
 	end = std::chrono::steady_clock::now();
-	std::cout << "Time to take quotients: " << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() / 1000000.0 << "seconds. " << std::endl;
+	std::cout << "Time to take quotients: " << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() / 1000000.0 << " seconds. " << std::endl;
 
 	return homologies;
 }

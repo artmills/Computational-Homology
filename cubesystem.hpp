@@ -11,6 +11,7 @@
 #include "cubicalset.hpp"
 #include "intmat.hpp"
 #include "homology.hpp"
+#include "grid.hpp"
 
 typedef std::vector<std::vector<Cube>> ChainComplex;
 typedef std::unordered_map<Cube, int, KeyHasher> Chain;
@@ -64,9 +65,12 @@ namespace CubeSystem
 	// 4.30: one step of the chain reduction algorithm.
 	// given a reduction pair (a, b) of cubes of dimension (i-1, i).
 	void Reduce(ChainComplex& E, BoundaryMap& Bd, int i, Cube& a, Cube& b); 
-
 	// 4.32: perform chain reduction.
 	void ReduceChainComplex(ChainComplex& E, BoundaryMap& bd);
 	
 	int ScalarProduct(Chain& c1, Chain& c2);
+
+
+	// given a grid create an array of cubes representing the cubical set.
+	CubicalSet GetCubicalSet(Grid& grid);
 }

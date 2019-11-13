@@ -119,6 +119,7 @@ std::vector<int> IntMat::getSubRow(int row, int start, int end)
 	{
 		std::cout << "INDEX ERROR FOR SUBROW!" << std::endl;
 		std::cout << "END = " << end << ". START = " << start << std::endl;
+		Print();
 		return v;
 	}
 	if (end >= matrix[0].size())

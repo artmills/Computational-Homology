@@ -242,7 +242,7 @@ void CubeSystem::Homology(CubicalSet& K, bool CCR)
 		begin = std::chrono::steady_clock::now();
 		BoundaryMap bd = Boundaries(E);
 		end = std::chrono::steady_clock::now();
-		std::cout << "Time to create boundary map: " << std::chrono::duration_cast<std::chrono::microseconds>(end-begin).count() / 1000000.0 << " seconds." << std::endl;
+		std::cout << "Time to create boundary maps: " << std::chrono::duration_cast<std::chrono::microseconds>(end-begin).count() / 1000000.0 << " seconds." << std::endl;
 
 		// apply the CCR algorithm:
 		begin = std::chrono::steady_clock::now();
@@ -277,10 +277,10 @@ void CubeSystem::Homology(CubicalSet& K, bool CCR)
 	}
 
 	// compute the homology groups:
-	begin = std::chrono::steady_clock::now();
+	//begin = std::chrono::steady_clock::now();
 	std::vector<Quotient> H = Homology::HomologyGroupOfChainComplex(D);
-	end = std::chrono::steady_clock::now();
-	std::cout << "Time to compute homology: " << std::chrono::duration_cast<std::chrono::microseconds>(end-begin).count() / 1000000.0 << " seconds." << std::endl;
+	//end = std::chrono::steady_clock::now();
+	//std::cout << "Time to compute homology: " << std::chrono::duration_cast<std::chrono::microseconds>(end-begin).count() / 1000000.0 << " seconds." << std::endl;
 
 	// analyze the homology groups:
 	Homology::AnalyzeHomology(H);
@@ -371,3 +371,29 @@ int CubeSystem::ScalarProduct(Chain& c1, Chain& c2)
 	return product;
 }
 
+
+CubicalSet CubeSystem::GetCubicalSet(Grid& grid)
+{
+	std::vector<Cube> cubes;
+
+	// go through the grid and create a cube for each activated square.
+	// the grid coordinates (x, y) will refer to the bottom left corner
+	// of the elementary cube. so each cube will have two intervals:
+	// (x, x+1) and (y, y+1).
+	
+	for (int x = 0; x < grid.getRows(); x++)
+	{
+		for (int y = 0; y < grid.getColumns(); y++)
+		{
+			if (grid.getElement(x, y))
+			{
+				Cube c; 
+				c.addInterval(Interval(x));
+				c.addInterval(Interval(y));
+				cubes.push_back(c);
+			}
+		}
+	}
+
+	return CubicalSet(cubes);
+}

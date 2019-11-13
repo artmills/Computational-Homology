@@ -3,7 +3,6 @@
 #include <unordered_map>
 #include <chrono>
 
-
 #include "intmat.hpp"
 #include "matsystem.hpp"
 #include "homology.hpp"
@@ -11,6 +10,7 @@
 #include "keyhasher.hpp"
 #include "cubicalset.hpp"
 #include "cubesystem.hpp"
+#include "landscape.hpp"
 
 IntMat CreateExample1()
 {
@@ -197,34 +197,30 @@ int main()
 	//std::vector<Cube> cubes2 = Get2DHole(20);
 	//cubes.insert(cubes.end(), cubes2.begin(), cubes2.end());
 
-	CubicalSet K(cubes);
+	Grid grid(20, 20);		
+	Landscape::RandomFill(grid, 7);
+	grid.Print();
+	CubicalSet K = CubeSystem::GetCubicalSet(grid);
+
+	//CubicalSet K(cubes);
 	CubicalSet Q = K;
 
 	std::cout << std::endl;
 
-	/*
 	std::cout << "Without CCR: " << std::endl;
 	std::chrono::steady_clock::time_point beginNoCCR = std::chrono::steady_clock::now();
 	CubeSystem::Homology(Q, false);
 	std::chrono::steady_clock::time_point endNoCCR = std::chrono::steady_clock::now();
-	*/
+	std::cout << "Total time without CCR: " << std::chrono::duration_cast<std::chrono::microseconds>(endNoCCR - beginNoCCR).count() / 1000000.0 << " seconds" << std::endl;
 
 	std::cout << std::endl;;
 	std::cout << "With CCR: " << std::endl;
 	std::chrono::steady_clock::time_point beginCCR = std::chrono::steady_clock::now();
 	CubeSystem::Homology(K, true);
 	std::chrono::steady_clock::time_point endCCR = std::chrono::steady_clock::now();
+	std::cout << "Total time with CCR: " << std::chrono::duration_cast<std::chrono::microseconds>(endCCR - beginCCR).count() / 1000000.0 << " seconds" << std::endl;
 
-	std::cout << std::endl;
-
-	/*
-	std::cout << std::endl;
-	std::cout << "Without CCR: " << std::chrono::duration_cast<std::chrono::microseconds>(endNoCCR - beginNoCCR).count() / 1000000.0 << "[s]" << std::endl;
-	*/
-
-	std::cout << std::endl;
-	std::cout << "With CCR: " << std::chrono::duration_cast<std::chrono::microseconds>(endCCR - beginCCR).count() / 1000000.0 << "[s]" << std::endl;
-
+	
 
 
 	std::cout << std::endl;
