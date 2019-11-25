@@ -133,12 +133,28 @@ void MatSystem::PartRowReduce(IntMat& B, IntMat& Q, IntMat& Qinv, int k, int l)
 		RowAddOperation(B, Q, Qinv, i, k, -q);
 	}
 }
+void MatSystem::PartRowReduce(IntMat& B, int k, int l)
+{
+	for (int i = k+1; i < B.getRows(); ++i)
+	{
+		int q = std::floor(B.getElement(i, l) / B.getElement(k, l));
+		RowAdd(B, i, k, -q);
+	}
+}
 void MatSystem::PartColumnReduce(IntMat& B, IntMat& Q, IntMat& Qinv, int k, int l)
 {
 	for (int j = k+1; j < B.getColumns(); ++j)
 	{
 		int q = std::floor(B.getElement(k, j) / B.getElement(k, l));
 		ColumnAddOperation(B, Q, Qinv, j, l, -q);
+	}
+}
+void MatSystem::PartColumnReduce(IntMat& B, int k, int l)
+{
+	for (int j = k+1; j < B.getColumns(); ++j)
+	{
+		int q = std::floor(B.getElement(k, j) / B.getElement(k, l));
+		ColumnAdd(B, j, l, -q);
 	}
 }
 
@@ -180,6 +196,12 @@ void MatSystem::RowPrepare(IntMat& B, IntMat& Q, IntMat& Qinv, int k, int l)
 	int minIndex = IndexSmallestNonzero(B.getColumn(l), k);
 	RowExchangeOperation(B, Q, Qinv, k, minIndex);
 }
+void MatSystem::RowPrepare(IntMat& B, int k, int l)
+{
+	int numberOfRows = B.getRows();
+	int minIndex = IndexSmallestNonzero(B.getColumn(l), k);
+	RowExchange(B, k, minIndex);
+}
 
 
 bool MatSystem::IsZero(std::vector<int> a)
@@ -209,6 +231,18 @@ void MatSystem::RowReduce(IntMat& B, IntMat& Q, IntMat& Qinv, int k, int l)
 	{
 		RowPrepare(B, Q, Qinv, k, l);
 		PartRowReduce(B, Q, Qinv, k, l);
+		subColumn = B.getSubColumn(l, k+1, lastRow);
+	}
+}
+void MatSystem::RowReduce(IntMat& B, int k, int l)
+{
+	int lastRow = B.getRows() - 1;
+	std::vector<int> subColumn = B.getSubColumn(l, k+1, lastRow);
+	std::vector<int> zero(subColumn.size());
+	while (!IsZero(subColumn))
+	{
+		RowPrepare(B, k, l);
+		PartRowReduce(B, k, l);
 		subColumn = B.getSubColumn(l, k+1, lastRow);
 	}
 }
@@ -363,6 +397,12 @@ void MatSystem::MoveMinNonzero(IntMat& B, IntMat& Q, IntMat& Qinv, IntMat& R, In
 	RowExchangeOperation(B, Q, Qinv, k, element[0]);
 	ColumnExchangeOperation(B, R, Rinv, k, element[1]);
 }
+void MatSystem::MoveMinNonzero(IntMat& B, int k)
+{
+	std::vector<int> element = MinNonzero(B, k);
+	RowExchange(B, k, element[0]);
+	ColumnExchange(B, k, element[1]);
+}
 
 
 std::vector<int> MatSystem::CheckForDivisibility(IntMat& B, int k)
@@ -396,6 +436,7 @@ void MatSystem::PartSmithForm(IntMat& B, IntMat& Q, IntMat& Qinv, IntMat& R, Int
 	int lastRow = B.getRows() - 1;
 	int lastColumn = B.getColumns() - 1;
 
+	/*
 	std::cout << std::endl;
 	std::cout << "###################################" << std::endl;
 	std::cout << "Part Smith Form: Initial matrices: " << std::endl;
@@ -405,11 +446,13 @@ void MatSystem::PartSmithForm(IntMat& B, IntMat& Q, IntMat& Qinv, IntMat& R, Int
 	Qinv.Print();
 	std::cout << "R = " << std::endl;
 	R.Print();
+	*/
 	bool flag = false;
 
 	do
 	{
 		MoveMinNonzero(B, Q, Qinv, R, Rinv, k);
+		/*
 		std::cout << "MoveMinNonzero for k = " << k << std::endl;
 		std::cout << "B = " << std::endl;
 		B.Print();
@@ -417,8 +460,10 @@ void MatSystem::PartSmithForm(IntMat& B, IntMat& Q, IntMat& Qinv, IntMat& R, Int
 		Qinv.Print();
 		std::cout << "R = " << std::endl;
 		R.Print();
+		*/
 
 		PartRowReduce(B, Q, Qinv, k, k);
+		/*
 		std::cout << "PartRowReduce for k = " << k << std::endl;
 		std::cout << "B = " << std::endl;
 		B.Print();
@@ -426,14 +471,16 @@ void MatSystem::PartSmithForm(IntMat& B, IntMat& Q, IntMat& Qinv, IntMat& R, Int
 		Qinv.Print();
 		std::cout << "R = " << std::endl;
 		R.Print();
+		*/
 
 		if (k < lastRow && !IsZero(B.getSubColumn(k, k+1, lastRow)))
 		{
-			std::cout << "Continue: the kth column of B is not zero from k+1 to lastRow, where k = " << k << std::endl;
+			//std::cout << "Continue: the kth column of B is not zero from k+1 to lastRow, where k = " << k << std::endl;
 			continue;
 		}
 		
 		PartColumnReduce(B, R, Rinv, k, k);
+		/*
 		std::cout << "PartColumnReduce for k = " << k << std::endl;
 		std::cout << "B = " << std::endl;
 		B.Print();
@@ -441,21 +488,23 @@ void MatSystem::PartSmithForm(IntMat& B, IntMat& Q, IntMat& Qinv, IntMat& R, Int
 		Qinv.Print();
 		std::cout << "R = " << std::endl;
 		R.Print();
+		*/
 
 		if (k < lastColumn && !IsZero(B.getSubRow(k, k+1, lastColumn)))
 		{
-			std::cout << "Continue: the kth row of B is not zero from k+1 to lastColumn, where k = " << k << std::endl;
+			//std::cout << "Continue: the kth row of B is not zero from k+1 to lastColumn, where k = " << k << std::endl;
 			continue;
 		}
 
 		std::vector<int> divisibilityCheck = CheckForDivisibility(B, k);
 		if (divisibilityCheck[0] != -1)
 		{
-			std::cout << "Fail divisibility for k = " << k << std::endl;
+			//std::cout << "Fail divisibility for k = " << k << std::endl;
 			int i = divisibilityCheck[0];
 			int j = divisibilityCheck[1];
 
 			RowAddOperation(B, Q, Qinv, i, k, 0);
+			/*
 			std::cout << "RowAdd for k = " << k << std::endl;
 			std::cout << "B = " << std::endl;
 			B.Print();
@@ -463,8 +512,10 @@ void MatSystem::PartSmithForm(IntMat& B, IntMat& Q, IntMat& Qinv, IntMat& R, Int
 			Qinv.Print();
 			std::cout << "R = " << std::endl;
 			R.Print();
+			*/
 
 			ColumnAddOperation(B, R, Rinv, k, j, -B.getElement(i, j));
+			/*
 			std::cout << "ColumnAdd for k = " << k << std::endl;
 			std::cout << "B = " << std::endl;
 			B.Print();
@@ -472,16 +523,126 @@ void MatSystem::PartSmithForm(IntMat& B, IntMat& Q, IntMat& Qinv, IntMat& R, Int
 			Qinv.Print();
 			std::cout << "R = " << std::endl;
 			R.Print();
+			*/
 		}
 		else
 		{
 			flag = true;
 		}
 	} while (!flag);
+	/*
 	std::cout << "Pass divisibility! " << std::endl;
 	std::cout << "###################################" << std::endl;
 	std::cout << std::endl;
 	std::cout << std::endl;
+	*/
+}
+void MatSystem::PartSmithForm(IntMat& B, int k)
+{
+
+	int lastRow = B.getRows() - 1;
+	int lastColumn = B.getColumns() - 1;
+
+	/*
+	std::cout << std::endl;
+	std::cout << "###################################" << std::endl;
+	std::cout << "Part Smith Form: Initial matrices: " << std::endl;
+	std::cout << "B = " << std::endl;
+	B.Print();
+	std::cout << "Qinv = " << std::endl;
+	Qinv.Print();
+	std::cout << "R = " << std::endl;
+	R.Print();
+	*/
+	bool flag = false;
+
+	do
+	{
+		MoveMinNonzero(B, k);
+		/*
+		std::cout << "MoveMinNonzero for k = " << k << std::endl;
+		std::cout << "B = " << std::endl;
+		B.Print();
+		std::cout << "Qinv = " << std::endl;
+		Qinv.Print();
+		std::cout << "R = " << std::endl;
+		R.Print();
+		*/
+
+		PartRowReduce(B, k, k);
+		/*
+		std::cout << "PartRowReduce for k = " << k << std::endl;
+		std::cout << "B = " << std::endl;
+		B.Print();
+		std::cout << "Qinv = " << std::endl;
+		Qinv.Print();
+		std::cout << "R = " << std::endl;
+		R.Print();
+		*/
+
+		if (k < lastRow && !IsZero(B.getSubColumn(k, k+1, lastRow)))
+		{
+			//std::cout << "Continue: the kth column of B is not zero from k+1 to lastRow, where k = " << k << std::endl;
+			continue;
+		}
+		
+		PartColumnReduce(B, k, k);
+		/*
+		std::cout << "PartColumnReduce for k = " << k << std::endl;
+		std::cout << "B = " << std::endl;
+		B.Print();
+		std::cout << "Qinv = " << std::endl;
+		Qinv.Print();
+		std::cout << "R = " << std::endl;
+		R.Print();
+		*/
+
+		if (k < lastColumn && !IsZero(B.getSubRow(k, k+1, lastColumn)))
+		{
+			//std::cout << "Continue: the kth row of B is not zero from k+1 to lastColumn, where k = " << k << std::endl;
+			continue;
+		}
+
+		std::vector<int> divisibilityCheck = CheckForDivisibility(B, k);
+		if (divisibilityCheck[0] != -1)
+		{
+			//std::cout << "Fail divisibility for k = " << k << std::endl;
+			int i = divisibilityCheck[0];
+			int j = divisibilityCheck[1];
+
+			RowAdd(B, i, k, 0);
+			/*
+			std::cout << "RowAdd for k = " << k << std::endl;
+			std::cout << "B = " << std::endl;
+			B.Print();
+			std::cout << "Qinv = " << std::endl;
+			Qinv.Print();
+			std::cout << "R = " << std::endl;
+			R.Print();
+			*/
+
+			ColumnAdd(B, k, j, -B.getElement(i, j));
+			/*
+			std::cout << "ColumnAdd for k = " << k << std::endl;
+			std::cout << "B = " << std::endl;
+			B.Print();
+			std::cout << "Qinv = " << std::endl;
+			Qinv.Print();
+			std::cout << "R = " << std::endl;
+			R.Print();
+			*/
+		}
+		else
+		{
+			flag = true;
+		}
+	} while (!flag);
+	/*
+	std::cout << "Pass divisibility! " << std::endl;
+	std::cout << "###################################" << std::endl;
+	std::cout << std::endl;
+	std::cout << std::endl;
+	*/
 }
 
 bool MatSystem::IsZero(IntMat B)
@@ -553,15 +714,6 @@ Smith MatSystem::GetSmithForm(IntMat B)
 		++t;
 		PartSmithForm(B, Q, Qinv, R, Rinv, t);
 
-		/*
-		std::cout << "Check if B = Qinv * A * R: " << std::endl;
-		IntMat temp = A * R;
-		IntMat result = Qinv * temp;
-		B.Print();
-		result.Print();
-		std::cout << std::endl;
-		*/
-
 		if (B.getElement(t, t) < 0)
 		{
 			RowMultiplyOperation(B, Q, Qinv, t);
@@ -579,6 +731,36 @@ Smith MatSystem::GetSmithForm(IntMat B)
 	return snf;
 }
 
+SmithLite MatSystem::GetSmithFormLite(IntMat B)
+{
+	int lastRow = B.getRows() - 1;
+	int lastColumn = B.getColumns() - 1;
+
+	int s = -1;
+	int t = -1;
+
+	while (t <= lastRow - 1 && t <= lastColumn - 1 && !IsZero(B.getSubMatrix(t + 1, lastRow, t + 1, lastColumn)))	
+	{
+		++t;
+		PartSmithForm(B, t);
+
+		if (B.getElement(t, t) < 0)
+		{
+			RowMultiply(B, t, -1);
+		}
+
+		if (B.getElement(t, t) == 1)
+		{
+			//std::cout << "Test: " << std::endl;
+			//B.Print();
+			++s;
+		}
+	}
+
+	SmithLite snf(B, s, t);
+	return snf;
+
+}
 
 
 

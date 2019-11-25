@@ -4,6 +4,7 @@
 #include "intmat.hpp"
 #include "rowechelonform.hpp"
 #include "smith.hpp"
+#include "smithlite.hpp"
 
 
 // responsible for performing operations on matrices. these include:
@@ -36,7 +37,9 @@ namespace MatSystem
 	// for a matrix B that satisfies the (k-1, l-1) criterion of
 	// row echelon form and B[k, l] != 0.
 	void PartRowReduce(IntMat& B, IntMat& Q, IntMat& Qinv, int k, int l);
+	void PartRowReduce(IntMat& B, int k, int l);
 	void PartColumnReduce(IntMat& B, IntMat& Q, IntMat& Qinv, int k, int l);
+	void PartColumnReduce(IntMat& B, int k, int l);
 
 	// algorithm 3.32: find smallest nonzero entry of a vector
 	// returning the INDEX of where that min value is located
@@ -49,6 +52,7 @@ namespace MatSystem
 	// entry, as well as the row number that we will swap the 
 	// smallest entry to.
 	void RowPrepare(IntMat& B, IntMat& Q, IntMat& Qinv, int k, int l);
+	void RowPrepare(IntMat& B, int k, int l);
 
 	// utility algorithm to check if an std::vector is zero:
 	bool IsZero(std::vector<int> a);
@@ -59,6 +63,7 @@ namespace MatSystem
 
 	// algorithm 3.36: row reduce the first column
 	void RowReduce(IntMat& B, IntMat& Q, IntMat& Qinv, int k, int l);
+	void RowReduce(IntMat& B, int k, int l);
 	
 	// algorithm 3.39: put a matrix into row echelon form
 	void RowEchelon(IntMat& B);
@@ -77,6 +82,7 @@ namespace MatSystem
 
 	// move minimal nonzero entry to the (k, k) position.
 	void MoveMinNonzero(IntMat& B, IntMat& Q, IntMat& Qinv, IntMat& R, IntMat& Rinv, int k);
+	void MoveMinNonzero(IntMat& B, int k);
 
 	// check whether the (k, k) entry divides all entries in the remaining
 	// submatrix. if not, get the coordinates of the entry that sucks.
@@ -84,10 +90,12 @@ namespace MatSystem
 
 	// step one of the Smith normal form procedure.
 	void PartSmithForm(IntMat& B, IntMat& Q, IntMat& Qinv, IntMat& R, IntMat& Rinv, int k);
+	void PartSmithForm(IntMat& B, int k);
 
 	// full Smith normal form algorithm.
 	void SmithForm(IntMat& B);
 	Smith GetSmithForm(IntMat B);
+	SmithLite GetSmithFormLite(IntMat B);
 
 
 

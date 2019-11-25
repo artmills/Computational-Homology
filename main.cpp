@@ -18,10 +18,10 @@ IntMat CreateExample1()
 }
 IntMat CreateExample2()
 {
-	IntMat ex(3, 5);
-	std::vector<int> row0 = {1, 6, 3, 7, 2};
-	std::vector<int> row1 = {0, 0, 2, 5, 1};
-	std::vector<int> row2 = {0, 2, 5, 1, 2};
+	IntMat ex(3, 4);
+	std::vector<int> row0 = {1, 6, 8, 8};
+	std::vector<int> row1 = {0, 0, 2, 10};
+	std::vector<int> row2 = {0, 2, 2, 10};
 	ex.setRow(0, row0);
 	ex.setRow(1, row1);
 	ex.setRow(2, row2);
@@ -91,9 +91,9 @@ std::vector<IntMat> GetTorus()
 	P1.setRow(0, P1row0);
 
 	IntMat P2(3, 2);
-	std::vector<int> P2row0 = {1, 1};
-	std::vector<int> P2row1 = {1, 1};
-	std::vector<int> P2row2 = {-1, -1};
+	std::vector<int> P2row0 = {-1, 1};
+	std::vector<int> P2row1 = {-1, 1};
+	std::vector<int> P2row2 = {1, -1};
 	P2.setRow(0, P2row0);
 	P2.setRow(1, P2row1);
 	P2.setRow(2, P2row2);
@@ -193,7 +193,6 @@ int main()
 {
 	std::cout << std::endl;
 
-	/*
 	Grid grid(10, 10);		
 	Landscape::RandomFill(grid, 50);
 	grid.Print();
@@ -202,6 +201,7 @@ int main()
 	CubicalSet Q = K;
 
 	std::cout << std::endl;
+	/*
 
 	std::cout << "Without CCR: " << std::endl;
 	std::chrono::steady_clock::time_point beginNoCCR = std::chrono::steady_clock::now();
@@ -209,17 +209,19 @@ int main()
 	std::chrono::steady_clock::time_point endNoCCR = std::chrono::steady_clock::now();
 	std::cout << "Total time without CCR: " << std::chrono::duration_cast<std::chrono::microseconds>(endNoCCR - beginNoCCR).count() / 1000000.0 << " seconds" << std::endl;
 
+	*/
 	std::cout << std::endl;;
 	std::cout << "With CCR: " << std::endl;
 	std::chrono::steady_clock::time_point beginCCR = std::chrono::steady_clock::now();
 	CubeSystem::Homology(K, true);
 	std::chrono::steady_clock::time_point endCCR = std::chrono::steady_clock::now();
 	std::cout << "Total time with CCR: " << std::chrono::duration_cast<std::chrono::microseconds>(endCCR - beginCCR).count() / 1000000.0 << " seconds" << std::endl;
-	*/
-	
-	std::vector<IntMat> test = GetRP2();
-	Homology::AnalyzeHomology(Homology::HomologyGroupOfChainComplex(test));
 
+	std::vector<IntMat> matrices;
+
+	matrices = GetTorus();
+	Homology::AnalyzeHomology(Homology::GetHomology(matrices));
+	std::cout << std::endl;
 
 	std::cout << std::endl;
 }

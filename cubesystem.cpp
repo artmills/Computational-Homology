@@ -278,12 +278,18 @@ void CubeSystem::Homology(CubicalSet& K, bool CCR)
 
 	// compute the homology groups:
 	//begin = std::chrono::steady_clock::now();
-	std::vector<Quotient> H = Homology::HomologyGroupOfChainComplex(D);
+	std::vector<std::vector<int>> hom = Homology::GetHomology(D);
+	Homology::AnalyzeHomology(hom);
 	//end = std::chrono::steady_clock::now();
 	//std::cout << "Time to compute homology: " << std::chrono::duration_cast<std::chrono::microseconds>(end-begin).count() / 1000000.0 << " seconds." << std::endl;
 
+
+
+
+	//std::vector<Quotient> H = Homology::HomologyGroupOfChainComplex(D);
+
 	// analyze the homology groups:
-	Homology::AnalyzeHomology(H);
+	//Homology::AnalyzeHomology(H);
 }
 
 
