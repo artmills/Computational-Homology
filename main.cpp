@@ -193,23 +193,21 @@ int main()
 {
 	std::cout << std::endl;
 
-	Grid grid(10, 10);		
+	Grid grid(100, 100);		
 	Landscape::RandomFill(grid, 50);
 	grid.Print();
 	CubicalSet K = CubeSystem::GetCubicalSet(grid);
 
-	CubicalSet Q = K;
 
 	std::cout << std::endl;
-	/*
 
+	CubicalSet Q = K;
 	std::cout << "Without CCR: " << std::endl;
 	std::chrono::steady_clock::time_point beginNoCCR = std::chrono::steady_clock::now();
 	CubeSystem::Homology(Q, false);
 	std::chrono::steady_clock::time_point endNoCCR = std::chrono::steady_clock::now();
 	std::cout << "Total time without CCR: " << std::chrono::duration_cast<std::chrono::microseconds>(endNoCCR - beginNoCCR).count() / 1000000.0 << " seconds" << std::endl;
 
-	*/
 	std::cout << std::endl;;
 	std::cout << "With CCR: " << std::endl;
 	std::chrono::steady_clock::time_point beginCCR = std::chrono::steady_clock::now();
@@ -217,13 +215,6 @@ int main()
 	std::chrono::steady_clock::time_point endCCR = std::chrono::steady_clock::now();
 	std::cout << "Total time with CCR: " << std::chrono::duration_cast<std::chrono::microseconds>(endCCR - beginCCR).count() / 1000000.0 << " seconds" << std::endl;
 
-	std::vector<IntMat> matrices;
-
-	matrices = GetTorus();
-	Homology::AnalyzeHomology(Homology::GetHomology(matrices));
-	std::cout << std::endl;
-
-	std::cout << std::endl;
 }
 
 

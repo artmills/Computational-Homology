@@ -436,7 +436,7 @@ std::vector<std::vector<int>> Homology::GetHomology(std::vector<IntMat>& boundar
 	for (int i = 0; i < boundaries.size(); ++i)
 	{
 		SmithLite snf = MatSystem::GetSmithFormLite(boundaries[i]);
-		snf.getB().Print();
+		//snf.getB().Print();
 		smithForms.push_back(snf);
 	}
 
