@@ -100,3 +100,85 @@ void Grid::Print()
 
 
 
+/********* constructors/destructors *********/
+
+Grid3D::Grid3D(int rows, int columns, int steps)
+{
+	// initialize grids.
+	for (int k = 0; k < steps; ++k)
+	{
+		Grid blank(rows, columns);
+		this->block.push_back(blank);
+	}
+}
+Grid3D::~Grid3D(){}
+
+
+
+
+
+/********* initializing a matrix row by row or column by column *********/
+
+void Grid3D::setRow(int row, int step, std::vector<bool> data)
+{
+	block[step].setRow(row, data);
+}
+
+void Grid3D::setColumn(int column, int step, std::vector<bool> data)
+{
+	block[step].setColumn(column, data);
+}
+
+
+
+
+
+
+
+/********* getters/setters for rows/columns/elements *********/
+
+int Grid3D::getRows()
+{
+	return this->block[0].getRows();
+}
+int Grid3D::getColumns()
+{
+	return this->block[0].getColumns();
+}
+int Grid3D::getSteps()
+{
+	return this->block.size();
+}
+
+bool Grid3D::getElement(int row, int column, int step)
+{
+	return this->block[step].getElement(row, column);
+}
+void Grid3D::setElement(int row, int column, int step, bool data)
+{
+	this->block[step].setElement(row, column, data);
+}
+
+void Grid3D::Flip(int row, int column, int step)
+{
+	this->block[step].Flip(row, column);
+}
+
+
+
+/********* Utility *********/
+
+void Grid3D::PrintCrossSection(int step)
+{
+	this->block[step].Print();
+}
+
+void Grid3D::Print()
+{
+	for (int z = 0; z < getSteps(); ++z)
+	{
+		PrintCrossSection(z);
+	}
+}
+
+

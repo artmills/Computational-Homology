@@ -403,3 +403,32 @@ CubicalSet CubeSystem::GetCubicalSet(Grid& grid)
 
 	return CubicalSet(cubes);
 }
+CubicalSet CubeSystem::GetCubicalSet(Grid3D& block)
+{
+	std::vector<Cube> cubes;
+
+	// go through the grid and create a cube for each activated square.
+	// the grid coordinates (x, y) will refer to the bottom left corner
+	// of the elementary cube. so each cube will have two intervals:
+	// (x, x+1) and (y, y+1).
+	
+	for (int x = 0; x < block.getRows(); ++x)
+	{
+		for (int y = 0; y < block.getColumns(); ++y)
+		{
+			for (int z = 0; z < block.getSteps(); ++z)
+			{
+				if (block.getElement(x, y, z))
+				{
+					Cube c; 
+					c.addInterval(Interval(x));
+					c.addInterval(Interval(y));
+					c.addInterval(Interval(z));
+					cubes.push_back(c);
+				}
+			}
+		}
+	}
+
+	return CubicalSet(cubes);
+}

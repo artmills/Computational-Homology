@@ -73,4 +73,5 @@ namespace CubeSystem
 
 	// given a grid create an array of cubes representing the cubical set.
 	CubicalSet GetCubicalSet(Grid& grid);
+	CubicalSet GetCubicalSet(Grid3D& block);
 }

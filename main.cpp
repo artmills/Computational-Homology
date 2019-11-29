@@ -193,27 +193,57 @@ int main()
 {
 	std::cout << std::endl;
 
-	Grid grid(100, 100);		
-	Landscape::RandomFill(grid, 50);
+	Grid grid(10, 10);		
+	Landscape::RandomFill(grid, 40);
 	grid.Print();
 	CubicalSet K = CubeSystem::GetCubicalSet(grid);
 
 
 	std::cout << std::endl;
 
+	/*
 	CubicalSet Q = K;
 	std::cout << "Without CCR: " << std::endl;
 	std::chrono::steady_clock::time_point beginNoCCR = std::chrono::steady_clock::now();
 	CubeSystem::Homology(Q, false);
 	std::chrono::steady_clock::time_point endNoCCR = std::chrono::steady_clock::now();
 	std::cout << "Total time without CCR: " << std::chrono::duration_cast<std::chrono::microseconds>(endNoCCR - beginNoCCR).count() / 1000000.0 << " seconds" << std::endl;
+	*/
 
 	std::cout << std::endl;;
-	std::cout << "With CCR: " << std::endl;
-	std::chrono::steady_clock::time_point beginCCR = std::chrono::steady_clock::now();
+	//std::cout << "With CCR: " << std::endl;
+	//std::chrono::steady_clock::time_point beginCCR = std::chrono::steady_clock::now();
 	CubeSystem::Homology(K, true);
-	std::chrono::steady_clock::time_point endCCR = std::chrono::steady_clock::now();
-	std::cout << "Total time with CCR: " << std::chrono::duration_cast<std::chrono::microseconds>(endCCR - beginCCR).count() / 1000000.0 << " seconds" << std::endl;
+	//std::chrono::steady_clock::time_point endCCR = std::chrono::steady_clock::now();
+	//std::cout << "Total time with CCR: " << std::chrono::duration_cast<std::chrono::microseconds>(endCCR - beginCCR).count() / 1000000.0 << " seconds" << std::endl;
+
+	Grid smooth = Landscape::Smooth(grid, 3, 1);
+	smooth.Print();
+	CubicalSet L = CubeSystem::GetCubicalSet(smooth);
+
+	std::cout << std::endl;;
+	//std::cout << "With CCR: " << std::endl;
+	//std::chrono::steady_clock::time_point beginCCR = std::chrono::steady_clock::now();
+	CubeSystem::Homology(L, true);
+	//std::chrono::steady_clock::time_point endCCR = std::chrono::steady_clock::now();
+	//std::cout << "Total time with CCR: " << std::chrono::duration_cast<std::chrono::microseconds>(endCCR - beginCCR).count() / 1000000.0 << " seconds" << std::endl;
+
+	Grid doubleSmooth = Landscape::Smooth(smooth, 3, 1);
+	doubleSmooth.Print();
+	CubicalSet J = CubeSystem::GetCubicalSet(doubleSmooth);
+
+	std::cout << std::endl;;
+	//std::cout << "With CCR: " << std::endl;
+	//std::chrono::steady_clock::time_point beginCCR = std::chrono::steady_clock::now();
+	CubeSystem::Homology(J, true);
+	//std::chrono::steady_clock::time_point endCCR = std::chrono::steady_clock::now();
+	//std::cout << "Total time with CCR: " << std::chrono::duration_cast<std::chrono::microseconds>(endCCR - beginCCR).count() / 1000000.0 << " seconds" << std::endl;
+
+	Grid3D block = Landscape::CreateBox(3, 3, 3);
+	block.Print();
+	CubicalSet S = CubeSystem::GetCubicalSet(block);
+	S.Print();
+	//CubeSystem::Homology(S, true);
 
 }
 
