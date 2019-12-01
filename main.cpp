@@ -193,8 +193,8 @@ int main()
 {
 	std::cout << std::endl;
 
-	Grid grid(10, 10);		
-	Landscape::RandomFill(grid, 40);
+	Grid grid(1, 1);		
+	Landscape::RandomFill(grid, 100);
 	grid.Print();
 	CubicalSet K = CubeSystem::GetCubicalSet(grid);
 
@@ -209,6 +209,7 @@ int main()
 	std::chrono::steady_clock::time_point endNoCCR = std::chrono::steady_clock::now();
 	std::cout << "Total time without CCR: " << std::chrono::duration_cast<std::chrono::microseconds>(endNoCCR - beginNoCCR).count() / 1000000.0 << " seconds" << std::endl;
 	*/
+	/*
 
 	std::cout << std::endl;;
 	//std::cout << "With CCR: " << std::endl;
@@ -216,7 +217,9 @@ int main()
 	CubeSystem::Homology(K, true);
 	//std::chrono::steady_clock::time_point endCCR = std::chrono::steady_clock::now();
 	//std::cout << "Total time with CCR: " << std::chrono::duration_cast<std::chrono::microseconds>(endCCR - beginCCR).count() / 1000000.0 << " seconds" << std::endl;
+	*/
 
+	/*
 	Grid smooth = Landscape::Smooth(grid, 3, 1);
 	smooth.Print();
 	CubicalSet L = CubeSystem::GetCubicalSet(smooth);
@@ -227,7 +230,8 @@ int main()
 	CubeSystem::Homology(L, true);
 	//std::chrono::steady_clock::time_point endCCR = std::chrono::steady_clock::now();
 	//std::cout << "Total time with CCR: " << std::chrono::duration_cast<std::chrono::microseconds>(endCCR - beginCCR).count() / 1000000.0 << " seconds" << std::endl;
-
+	*/
+	/*
 	Grid doubleSmooth = Landscape::Smooth(smooth, 3, 1);
 	doubleSmooth.Print();
 	CubicalSet J = CubeSystem::GetCubicalSet(doubleSmooth);
@@ -239,11 +243,27 @@ int main()
 	//std::chrono::steady_clock::time_point endCCR = std::chrono::steady_clock::now();
 	//std::cout << "Total time with CCR: " << std::chrono::duration_cast<std::chrono::microseconds>(endCCR - beginCCR).count() / 1000000.0 << " seconds" << std::endl;
 
-	Grid3D block = Landscape::CreateBox(3, 3, 3);
-	block.Print();
-	CubicalSet S = CubeSystem::GetCubicalSet(block);
-	S.Print();
-	//CubeSystem::Homology(S, true);
+	//Grid3D block = Landscape::CreateBox(3, 3, 3);
+	//Grid3D block = Landscape::CreateSphere(5);
+	//block.Print();
+	//CubicalSet S = CubeSystem::GetCubicalSet(block);
+	//CubeSystem::Homology(S, false);
+	*/
+
+	Cube Q;
+	Q.addInterval(Interval(0));
+	Q.addInterval(Interval(0));
+	Q.addInterval(Interval(0));
+	std::cout << "Original cube: " << std::endl;
+	Q.Print();
+
+	std::unordered_map<Cube, int, KeyHasher> map = CubeSystem::PrimaryFaces(Q);
+	std::cout << std::endl;
+	std::cout << "Facets: " << std::endl;
+	for (auto it : map)
+	{
+		it.first.Print();
+	}
 
 }
 

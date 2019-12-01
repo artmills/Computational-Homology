@@ -1,6 +1,6 @@
 
-#CPPFLAGS=-std=c++17 -O3
-CPPFLAGS=-std=c++17 -g
+CPPFLAGS=-std=c++17 -O3
+#CPPFLAGS=-std=c++17 -g
 
 OBJDIR=obj
 

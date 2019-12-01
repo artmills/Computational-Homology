@@ -88,6 +88,9 @@ Grid Landscape::Smooth(Grid& grid, int neighborTolerance, int neighborScanDistan
 
 Grid3D Landscape::CreateSphere(int radius)
 {
+	// testing: 3 seems to work well. 2 does not work.
+	const int tolerance = 5;
+
 	// odd numbers are easier to work with so we get an exact
 	// center for the sphere.
 	int diameter = 2 * radius;
@@ -102,7 +105,7 @@ Grid3D Landscape::CreateSphere(int radius)
 			for (int y = 0; y < diameter+1; ++y)
 			{
 				int pyth = (x-center)*(x-center) + (y-center)*(y-center) + (z-center)*(z-center);
-				if (squareRadius - 3 <= pyth && pyth <= squareRadius + 3)
+				if (squareRadius - tolerance <= pyth && pyth <= squareRadius + tolerance)
 				{
 					block.setElement(x, y, z, 1);
 				}

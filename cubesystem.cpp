@@ -331,6 +331,13 @@ void CubeSystem::RemoveElementFromVector(std::vector<Cube>& v, Cube& e)
 	}
 }
 
+// WARNING:
+// for an as of yet unknown reason, this algorithm breaks
+// on 3D objects. possible reasons:
+// * the book is wrong about the boundary formula in 3D and higher.
+// * I misinterpreted the typo in the book, even though this algorithm does work in 2D.
+// * the boundary operator is bugged in 3D (my fault).
+// * I just screwed up in general (most likely case).
 void CubeSystem::ReduceChainComplex(ChainComplex& E, BoundaryMap& bd)
 {
 	for (int i = E.size() - 1; i > 1; --i)
