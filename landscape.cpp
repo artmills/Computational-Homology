@@ -3,7 +3,8 @@
 void Landscape::RandomFill(Grid& grid, int percent)
 {
 	// seed the random generator.
-	srand(time(0));
+	//srand(time(0 + seedShift));
+	//srand(time(NULL));
 
 	// flip the elements in the grid.
 	for (int x = 0; x < grid.getRows(); ++x)

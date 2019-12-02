@@ -215,6 +215,41 @@ std::vector<IntMat> CubeSystem::BoundaryOperatorMatrix(std::vector<std::vector<C
 }
 
 
+std::vector<std::vector<int>> CubeSystem::GetHomology(CubicalSet& K, bool CCR)
+{
+	// get the generators for C_k:
+	std::vector<std::unordered_map<Cube, int, KeyHasher>> chainGroups = CubicalChainGroups(K);
+	
+	// convert the generators into coordinates:
+	std::vector<std::vector<Cube>> E;
+	for (int i = 0; i < chainGroups.size(); ++i)
+	{
+		E.push_back(GetCoordinates(chainGroups[i]));
+	}
+
+	std::vector<IntMat> D;
+	if (CCR)
+	{
+		// get the boundary operators:
+		BoundaryMap bd = Boundaries(E);
+
+		// apply the CCR algorithm:
+		ReduceChainComplex(E, bd);		
+	
+		// get the boundary operator matrices from the chains:
+		D = BoundaryOperatorMatrix(E, bd);
+	}
+	else
+	{
+		// get the boundary operator matrices from the chains:
+		D = BoundaryOperatorMatrix(E);
+	}
+
+	// compute the homology groups:
+	std::vector<std::vector<int>> hom = Homology::GetHomology(D);
+	return hom;
+}
+
 void CubeSystem::Homology(CubicalSet& K, bool CCR)
 {
 	// get the generators for C_k:
