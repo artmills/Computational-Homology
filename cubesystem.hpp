@@ -57,6 +57,7 @@ namespace CubeSystem
 	// 3.78: we won't bother with algorithm 3.77 at the moment.
 	// we're only interested in the orders of the homology groups, not 
 	// the chain bases.
+	std::vector<std::vector<int>> GetHomology(CubicalSet& K, bool CCR); 
 	void Homology(CubicalSet& K, bool CCR); 
 	
 	// utility.
@@ -73,4 +74,5 @@ namespace CubeSystem
 
 	// given a grid create an array of cubes representing the cubical set.
 	CubicalSet GetCubicalSet(Grid& grid);
+	CubicalSet GetCubicalSet(Grid3D& block);
 }

@@ -25,6 +25,8 @@ public:
 	bool isEmpty();
 	std::unordered_map<Cube, int, KeyHasher> cubes;
 
+	void Print();
+
 private:
 
 	int dimension = 0;

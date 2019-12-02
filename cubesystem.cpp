@@ -215,6 +215,41 @@ std::vector<IntMat> CubeSystem::BoundaryOperatorMatrix(std::vector<std::vector<C
 }
 
 
+std::vector<std::vector<int>> CubeSystem::GetHomology(CubicalSet& K, bool CCR)
+{
+	// get the generators for C_k:
+	std::vector<std::unordered_map<Cube, int, KeyHasher>> chainGroups = CubicalChainGroups(K);
+	
+	// convert the generators into coordinates:
+	std::vector<std::vector<Cube>> E;
+	for (int i = 0; i < chainGroups.size(); ++i)
+	{
+		E.push_back(GetCoordinates(chainGroups[i]));
+	}
+
+	std::vector<IntMat> D;
+	if (CCR)
+	{
+		// get the boundary operators:
+		BoundaryMap bd = Boundaries(E);
+
+		// apply the CCR algorithm:
+		ReduceChainComplex(E, bd);		
+	
+		// get the boundary operator matrices from the chains:
+		D = BoundaryOperatorMatrix(E, bd);
+	}
+	else
+	{
+		// get the boundary operator matrices from the chains:
+		D = BoundaryOperatorMatrix(E);
+	}
+
+	// compute the homology groups:
+	std::vector<std::vector<int>> hom = Homology::GetHomology(D);
+	return hom;
+}
+
 void CubeSystem::Homology(CubicalSet& K, bool CCR)
 {
 	// get the generators for C_k:
@@ -278,12 +313,18 @@ void CubeSystem::Homology(CubicalSet& K, bool CCR)
 
 	// compute the homology groups:
 	//begin = std::chrono::steady_clock::now();
-	std::vector<Quotient> H = Homology::HomologyGroupOfChainComplex(D);
+	std::vector<std::vector<int>> hom = Homology::GetHomology(D);
+	Homology::AnalyzeHomology(hom);
 	//end = std::chrono::steady_clock::now();
 	//std::cout << "Time to compute homology: " << std::chrono::duration_cast<std::chrono::microseconds>(end-begin).count() / 1000000.0 << " seconds." << std::endl;
 
+
+
+
+	//std::vector<Quotient> H = Homology::HomologyGroupOfChainComplex(D);
+
 	// analyze the homology groups:
-	Homology::AnalyzeHomology(H);
+	//Homology::AnalyzeHomology(H);
 }
 
 
@@ -325,6 +366,13 @@ void CubeSystem::RemoveElementFromVector(std::vector<Cube>& v, Cube& e)
 	}
 }
 
+// WARNING:
+// for an as of yet unknown reason, this algorithm breaks
+// on 3D objects. possible reasons:
+// * the book is wrong about the boundary formula in 3D and higher.
+// * I misinterpreted the typo in the book, even though this algorithm does work in 2D.
+// * the boundary operator is bugged in 3D (my fault).
+// * I just screwed up in general (most likely case).
 void CubeSystem::ReduceChainComplex(ChainComplex& E, BoundaryMap& bd)
 {
 	for (int i = E.size() - 1; i > 1; --i)
@@ -391,6 +439,35 @@ CubicalSet CubeSystem::GetCubicalSet(Grid& grid)
 				c.addInterval(Interval(x));
 				c.addInterval(Interval(y));
 				cubes.push_back(c);
+			}
+		}
+	}
+
+	return CubicalSet(cubes);
+}
+CubicalSet CubeSystem::GetCubicalSet(Grid3D& block)
+{
+	std::vector<Cube> cubes;
+
+	// go through the grid and create a cube for each activated square.
+	// the grid coordinates (x, y) will refer to the bottom left corner
+	// of the elementary cube. so each cube will have two intervals:
+	// (x, x+1) and (y, y+1).
+	
+	for (int x = 0; x < block.getRows(); ++x)
+	{
+		for (int y = 0; y < block.getColumns(); ++y)
+		{
+			for (int z = 0; z < block.getSteps(); ++z)
+			{
+				if (block.getElement(x, y, z))
+				{
+					Cube c; 
+					c.addInterval(Interval(x));
+					c.addInterval(Interval(y));
+					c.addInterval(Interval(z));
+					cubes.push_back(c);
+				}
 			}
 		}
 	}

@@ -147,7 +147,7 @@ IntMat Homology::Solve(IntMat A, IntMat& b)
 		}
 	}
 
-	// pretty sure that there is a typo in the book.
+	// there is a typo in the book:
 	// the book ends this loop at A.getRows(), which is definitely wrong.
 	for (int i = t+1; i < A.getColumns(); ++i)
 	{
@@ -232,12 +232,6 @@ IntMat Homology::Solve(IntMat A, std::vector<int>& b)
 
 Quotient Homology::QuotientGroup(IntMat& W, IntMat& V)
 {
-	/*
-	std::cout << "Computing " << std::endl;
-	W.Print();
-	std::cout << "quotient by " << std::endl;
-	V.Print();
-	*/
 	// if V is empty then V is a map from the trivial group.
 	// in this case, the quotient group G/H is just G.
 	if (V.isEmpty())
@@ -264,35 +258,13 @@ Quotient Homology::QuotientGroup(IntMat& W, IntMat& V)
 	{
 		std::vector<int> b = V.getColumn(i);
 
-		/*
-		std::cout << "Solving the system: W = " << std::endl;
-		W.Print();
-		std::cout << "b = " << std::endl;
-		MatSystem::Print(b);
-		*/
-
-		//std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
 		IntMat soln = Solve(W, b);
 		A.setColumn(i, soln.getColumn(0));
-		//std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
-		//std::cout << "Time to solve equation for quotient group: " << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() / 1000000.0 << "seconds. " << std::endl;
 	}
 
 	Smith snf = MatSystem::GetSmithForm(A);
 	IntMat U = W * snf.getQ();
 	Quotient result(U, snf.getB(), snf.getS());
-
-	/*
-	std::cout << "Computing " << std::endl;
-	W.Print();
-	std::cout << "quotient by " << std::endl;
-	V.Print();
-	std::cout << "to obtain U = " << std::endl;
-	U.Print();
-	std::cout << "and B = " << std::endl;
-	snf.getB().Print();
-	std::cout << "with s = " << snf.getS() << std::endl;
-	*/
 
 	return result;
 }
@@ -450,4 +422,81 @@ void Homology::AnalyzeHomology(std::vector<Quotient> groups)
 		}
 		std::cout << std::endl;
 	}
+}
+
+std::vector<std::vector<int>> Homology::GetHomology(std::vector<IntMat>& boundaries)
+{
+	// matrices[i] = d_{i+1}: C_{i+1} -> C_i where matrices[0] = d_1.
+	// there is no reason to pass d_0 since it is the zero matrix.
+	// similarly, there is no reason to pass d_{n+1}.
+
+	// we will convert all matrices to their Smith forms.
+	// we do not need the entire Smith normal form: just B, s, and t.
+	std::vector<SmithLite> smithForms;
+	for (int i = 0; i < boundaries.size(); ++i)
+	{
+		SmithLite snf = MatSystem::GetSmithFormLite(boundaries[i]);
+		//snf.getB().Print();
+		smithForms.push_back(snf);
+	}
+
+	// output will be stored in arrays of integers.
+	// the last element of each array is the Betti number.
+	// the first elements are the torsion coefficients.
+	std::vector<std::vector<int>> homologies;
+	
+	// handle the H_0 case individually.
+	SmithLite& snf1 = smithForms[0];
+	homologies.push_back(GetIthHomology(snf1, 0));
+
+	for (int i = 1; i < smithForms.size(); ++i)
+	{
+		SmithLite& snf = smithForms[i];
+		IntMat& B = snf.getB();
+		int& s = snf.getS();
+		int& t = snf.getT();
+
+		homologies.push_back(GetIthHomology(snf, smithForms[i-1].getT() + 1));
+	}
+
+	// handle the H_n case individually:
+	SmithLite& snfn = smithForms[smithForms.size() - 1];
+	std::vector<int> Hn = {snfn.getB().getColumns() - (snfn.getT() + 1)};
+	homologies.push_back(Hn);
+	
+
+	return homologies;
+}
+
+void Homology::AnalyzeHomology(std::vector<std::vector<int>> homologies)
+{
+	for (int i = 0; i < homologies.size(); ++i)
+	{
+		for (int j = 0; j < homologies[i].size(); ++j)
+		{
+			std::cout << homologies[i][j] << " ";
+		}
+		std::cout << std::endl;
+	}
+}
+
+std::vector<int> Homology::GetIthHomology(SmithLite& D, int rankd)
+{
+	IntMat& B = D.getB();
+	int& s = D.getS();
+	int& t = D.getT();
+
+	std::vector<int> homology;
+
+	// get torsion coefficients:
+	for (int j = s+1; j <= t; ++j)
+	{
+		homology.push_back(B.getElement(j, j));
+	}
+
+	// get betti number r: r = rank(C_i)
+	int betti = B.getRows() - rankd;
+	homology.push_back(betti - (t+1));
+
+	return homology;	
 }

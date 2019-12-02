@@ -5,6 +5,7 @@
 
 #include "matsystem.hpp"
 #include "smith.hpp"
+#include "smithlite.hpp"
 #include "quotient.hpp"
 
 // implements algorithms to analyze matrices representing functions
@@ -40,4 +41,10 @@ namespace Homology
 	void AnalyzeHomology(std::vector<Quotient> groups);
 	void AnalyzeHomologyRaw(std::vector<Quotient> groups);
 
+	std::vector<std::vector<int>> GetHomology(std::vector<IntMat>& boundaries);
+	void AnalyzeHomology(std::vector<std::vector<int>> homologies);
+
+	// D is the boundary map D_{i+1}:C_{i+1} -> C_i.
+	// rankd is the rank of the boundary map D_i: C_i -> C_{i-1}.
+	std::vector<int> GetIthHomology(SmithLite& D, int rankd);
 }

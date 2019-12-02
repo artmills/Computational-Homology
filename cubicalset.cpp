@@ -34,3 +34,11 @@ bool CubicalSet::isEmpty()
 {
 	return (cubes.size() == 0)? true : false;
 }
+
+void CubicalSet::Print()
+{
+	for (auto it : cubes)
+	{
+		it.first.Print();
+	}
+}
