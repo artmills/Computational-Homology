@@ -313,8 +313,8 @@ void CubeSystem::Homology(CubicalSet& K, bool CCR)
 
 	// compute the homology groups:
 	//begin = std::chrono::steady_clock::now();
-	std::vector<std::vector<int>> hom = Homology::GetHomology(D);
-	Homology::AnalyzeHomology(hom);
+	//std::vector<std::vector<int>> hom = Homology::GetHomology(D);
+	//Homology::AnalyzeHomology(hom);
 	//end = std::chrono::steady_clock::now();
 	//std::cout << "Time to compute homology: " << std::chrono::duration_cast<std::chrono::microseconds>(end-begin).count() / 1000000.0 << " seconds." << std::endl;
 

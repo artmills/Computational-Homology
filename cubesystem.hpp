@@ -5,6 +5,7 @@
 #include <vector>
 #include <cmath>
 #include <chrono>
+#include <algorithm>
 
 #include "cube.hpp"
 #include "keyhasher.hpp"

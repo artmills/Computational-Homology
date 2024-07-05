@@ -12,6 +12,10 @@
 #include "cubesystem.hpp"
 #include "landscape.hpp"
 
+//#include <givaro/modular.h>
+//#include <linbox/matrix/dense-matrix.h>
+
+
 IntMat CreateExample1()
 {
 	return IntMat(2, 4, 4, -6, 6, 12, 10, -4, -16);	
@@ -192,7 +196,6 @@ void AnalyzeCellularAutomata(int gridX, int gridY, int fillPercent, int toleranc
 {
 	srand(time(NULL));
 	int progress = (float)iterations / (float)10;
-	std::cout << progress << std::endl;
 
 	int sumH0 = 0;
 	int sumH1 = 0;
@@ -212,11 +215,12 @@ void AnalyzeCellularAutomata(int gridX, int gridY, int fillPercent, int toleranc
 		Landscape::RandomFill(grid, fillPercent);
 
 		// smooth the grid.
-		Grid smooth = Landscape::Smooth(grid, tolerance, 1);
+		//Grid smooth = Landscape::Smooth(grid, tolerance, 1);
 		//smooth.Print();
 
 		// convert to a cubical set and analyze the homology.
-		CubicalSet K = CubeSystem::GetCubicalSet(smooth);
+		//CubicalSet K = CubeSystem::GetCubicalSet(smooth);
+		CubicalSet K = CubeSystem::GetCubicalSet(grid);
 		std::vector<std::vector<int>> homologies = CubeSystem::GetHomology(K, true);
 
 		// keep track:
@@ -247,7 +251,11 @@ void AnalyzeCellularAutomata(int gridX, int gridY, int fillPercent, int toleranc
 
 		if (i % progress == 0)
 		{
-			smooth.Print();
+			std::cout << std::endl;
+			std::cout << std::endl;
+			grid.Print();
+			std::cout << std::endl;
+			std::cout << std::endl;
 		}
 	}
 
@@ -289,33 +297,42 @@ int main()
 	std::cout << std::endl;
 
 	/*
-	Grid grid(1, 1);		
-	Landscape::RandomFill(grid, 100);
+	IntMat A(1, 3);
+	std::vector<int> row0 = {1, 0, 2};
+	A.setRow(0, row0);
+	A.Print();
+	std::vector<IntMat> ki = Homology::KernelImage(A);
+	ki[0].Print();
+	ki[1].Print();
+	*/
+
+	/*
+	Grid grid(10, 10);		
+	Landscape::RandomFill(grid, 50);
 	grid.Print();
 	CubicalSet K = CubeSystem::GetCubicalSet(grid);
 	*/
 
-	//AnalyzeCellularAutomata(30, 30, 65, 3, 1, 100);
+	AnalyzeCellularAutomata(10, 10, 80, 3, 0, 100);
 
 	std::cout << std::endl;
 
 	/*
 	CubicalSet Q = K;
 	std::cout << "Without CCR: " << std::endl;
-	std::chrono::steady_clock::time_point beginNoCCR = std::chrono::steady_clock::now();
+	//std::chrono::steady_clock::time_point beginNoCCR = std::chrono::steady_clock::now();
 	CubeSystem::Homology(Q, false);
-	std::chrono::steady_clock::time_point endNoCCR = std::chrono::steady_clock::now();
-	std::cout << "Total time without CCR: " << std::chrono::duration_cast<std::chrono::microseconds>(endNoCCR - beginNoCCR).count() / 1000000.0 << " seconds" << std::endl;
-	*/
-	/*
+	//std::chrono::steady_clock::time_point endNoCCR = std::chrono::steady_clock::now();
+	//std::cout << "Total time without CCR: " << std::chrono::duration_cast<std::chrono::microseconds>(endNoCCR - beginNoCCR).count() / 1000000.0 << " seconds" << std::endl;
 
 	std::cout << std::endl;;
-	//std::cout << "With CCR: " << std::endl;
+	std::cout << "With CCR: " << std::endl;
 	//std::chrono::steady_clock::time_point beginCCR = std::chrono::steady_clock::now();
 	CubeSystem::Homology(K, true);
 	//std::chrono::steady_clock::time_point endCCR = std::chrono::steady_clock::now();
 	//std::cout << "Total time with CCR: " << std::chrono::duration_cast<std::chrono::microseconds>(endCCR - beginCCR).count() / 1000000.0 << " seconds" << std::endl;
 	*/
+	
 
 	/*
 	Grid smooth = Landscape::Smooth(grid, 3, 1);
@@ -348,6 +365,7 @@ int main()
 	//CubeSystem::Homology(S, false);
 	*/
 
+	/*
 	Grid grid(2, 2);
 	grid.setElement(0, 0, 1);
 	grid.setElement(1, 0, 1);
@@ -359,13 +377,21 @@ int main()
 	Q.addInterval(Interval(0));
 	Q.addInterval(Interval(0));
 
-	/*
 	std::vector<std::unordered_map<Cube, int, KeyHasher>> chains = CubeSystem::CubicalChainGroups(K);
 	std::unordered_map<Cube, int, KeyHasher> boundary = CubeSystem::BoundaryOperator(Q);
 
 	std::vector<Cube> coordinates = CubeSystem::GetCoordinates(chains[1]);
 	std::vector<int> v = CubeSystem::CanonicalCoordinates(boundary, coordinates);
 	*/
+
+	//typedef Givaro::Modular<int> Field;
+	//Field F(101);
+	
+
+
+
+
+
 	
 }
 
