@@ -1,4 +1,10 @@
 #include "homology.hpp"
+#include <linbox/algorithms/smith-form-adaptive.h>
+#include <linbox/field/field-traits.h>
+#include <linbox/integer.h>
+#include <linbox/linbox-tags.h>
+#include <linbox/solutions/solution-tags.h>
+#include <linbox/vector/vector.h>
 
 std::vector<IntMat> Homology::KernelImage(IntMat& B)
 {
@@ -424,6 +430,86 @@ void Homology::AnalyzeHomology(std::vector<Quotient> groups)
 	}
 }
 
+// LinBox version.
+std::vector<std::vector<int>> Homology::GetHomologyLinBox(std::vector<Matrix>& boundaries)
+{
+	// matrices[i] = d_{i+1}: C_{i+1} -> C_i where matrices[0] = d_1.
+	// there is no reason to pass d_0 since it is the zero matrix.
+	// similarly, there is no reason to pass d_{n+1}.
+
+	// LinBox: get the info for the Smith normal form and convert to s, t lists.
+	std::vector<SmithList> smithLists;
+	std::vector<int> sList(boundaries.size(), -1);
+	std::vector<int> tList(boundaries.size(), -1);
+	std::vector<int> rowList(boundaries.size(), -1); // Number of rows.
+	for (int i = 0; i < boundaries.size(); ++i)
+	{
+		// Compute the Smith normal form.
+		SmithList sl;
+
+		std::cout << "Computing smith form of the " << i << "th boundary matrix with size ";
+		std::cout << boundaries[i].rowdim() << " x " << boundaries[i].coldim() << std::endl;
+		LinBox::RingCategories::IntegerTag a;
+		LinBox::Method::Blackbox b;
+		//LinBox::smithForm(sl, boundaries[i], a, b);
+		LinBox::smithForm(sl, boundaries[i]);
+		std::cout << "Completed smith form calculation." << std::endl;
+		/*
+		LinBox::DenseVector<Integers> v(ZZ, boundaries[i].coldim());
+		LinBox::SmithFormAdaptive::smithForm(v, boundaries[i]);
+		for (auto it = v.begin(); it != v.end(); ++it)
+		{
+			std::cout << *it << std::endl;
+		}
+		*/
+
+		// Convert the SmithList structure from LinBox into arrays that keep track of s, t.
+		int t = -1;
+		int s = -1;
+		for (auto it = sl.begin(); it != sl.end(); ++it)
+		{
+			std::pair p = *it;
+			
+			// t counts the number of nonzero diagonal entries minus 1 (which is why we initialize to -1).
+			if (p.first != 0)
+				t += p.second;
+			// s counts the number of diagonal entries equal to 1.
+			if (p.first == 1)
+				s = p.second;
+		}
+		// Set into the corresponding arrays.
+		smithLists.push_back(sl);
+		sList[i] = s;
+		tList[i] = t;
+		rowList[i] = boundaries[i].rowdim();
+	}
+
+	// output will be stored in arrays of integers.
+	// the last element of each array is the Betti number.
+	// the first elements are the torsion coefficients.
+	std::vector<std::vector<int>> homologies;
+	
+	// handle the H_0 case individually.
+	SmithList& sl0 = smithLists[0];
+	homologies.push_back(GetIthHomologyLinBox(sl0, sList[0], tList[0], rowList[0], 0));
+
+	// H_1 to H_{n-1}.
+	for (int i = 1; i < smithLists.size(); ++i)
+	{
+		SmithList& sl = smithLists[i];
+		homologies.push_back(GetIthHomologyLinBox(sl, sList[i], tList[i], rowList[i], tList[i-1] + 1));
+	}
+
+	// handle the H_n case individually:
+	SmithList& snfn = smithLists[smithLists.size() - 1];
+	//std::vector<int> Hn = {snfn.getB().getColumns() - (snfn.getT() + 1)};
+	std::vector<int> Hn = {(int)boundaries[boundaries.size() - 1].coldim() - (tList[smithLists.size() - 1] + 1)};
+	//int nColumns = (int)boundaries[boundaries.size() - 1].coldim();
+	homologies.push_back(Hn);
+
+	return homologies;
+}
+
 std::vector<std::vector<int>> Homology::GetHomology(std::vector<IntMat>& boundaries)
 {
 	// matrices[i] = d_{i+1}: C_{i+1} -> C_i where matrices[0] = d_1.
@@ -437,6 +523,8 @@ std::vector<std::vector<int>> Homology::GetHomology(std::vector<IntMat>& boundar
 	{
 		SmithLite snf = MatSystem::GetSmithFormLite(boundaries[i]);
 		//snf.getB().Print();
+		//std::cout << "s = " << snf.getS() << ". t = " << snf.getT() << std::endl;
+		//std::cout << std::endl;
 		smithForms.push_back(snf);
 	}
 
@@ -480,6 +568,31 @@ void Homology::AnalyzeHomology(std::vector<std::vector<int>> homologies)
 	}
 }
 
+// LinBox version.
+std::vector<int> Homology::GetIthHomologyLinBox(SmithList& sl, int s, int t, int rows, int rankd)
+{
+	std::vector<int> homology;
+
+	// get torsion coefficients, which are the nonzero/nonidentity diagonal entries.
+	for (auto it = sl.begin(); it != sl.end(); ++it)
+	{
+		std::pair p = *it;
+		int value = p.first;
+		if (value != 0 && value != 1)
+		{
+			// Now add the value the appropriate number of times.
+			int count = p.second;
+			for (int j = 0; j < count; ++j)
+				homology.push_back(value);
+		}
+	}
+
+	// get betti number r: r = rank(C_i)
+	int betti = rows - rankd;
+	homology.push_back(betti - (t+1));
+
+	return homology;	
+}
 std::vector<int> Homology::GetIthHomology(SmithLite& D, int rankd)
 {
 	IntMat& B = D.getB();

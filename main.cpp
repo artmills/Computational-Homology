@@ -12,9 +12,6 @@
 #include "cubesystem.hpp"
 #include "landscape.hpp"
 
-//#include <givaro/modular.h>
-//#include <linbox/matrix/dense-matrix.h>
-
 
 IntMat CreateExample1()
 {
@@ -216,12 +213,14 @@ void AnalyzeCellularAutomata(int gridX, int gridY, int fillPercent, int toleranc
 
 		// smooth the grid.
 		//Grid smooth = Landscape::Smooth(grid, tolerance, 1);
-		//smooth.Print();
+		grid.Print();
 
 		// convert to a cubical set and analyze the homology.
 		//CubicalSet K = CubeSystem::GetCubicalSet(smooth);
 		CubicalSet K = CubeSystem::GetCubicalSet(grid);
-		std::vector<std::vector<int>> homologies = CubeSystem::GetHomology(K, true);
+
+		std::cout << "Computing homology..." << std::endl;
+		std::vector<std::vector<int>> homologies = CubeSystem::GetHomologyLinBox(K, true);
 
 		// keep track:
 		int& zero = homologies[0][0];
@@ -249,14 +248,6 @@ void AnalyzeCellularAutomata(int gridX, int gridY, int fillPercent, int toleranc
 			maxH1 = one;
 		}
 
-		if (i % progress == 0)
-		{
-			std::cout << std::endl;
-			std::cout << std::endl;
-			grid.Print();
-			std::cout << std::endl;
-			std::cout << std::endl;
-		}
 	}
 
 	// average:
@@ -294,110 +285,10 @@ void AnalyzeCellularAutomata(int gridX, int gridY, int fillPercent, int toleranc
 
 int main()
 {
-	std::cout << std::endl;
-
-	/*
-	IntMat A(1, 3);
-	std::vector<int> row0 = {1, 0, 2};
-	A.setRow(0, row0);
-	A.Print();
-	std::vector<IntMat> ki = Homology::KernelImage(A);
-	ki[0].Print();
-	ki[1].Print();
-	*/
-
-	/*
-	Grid grid(10, 10);		
-	Landscape::RandomFill(grid, 50);
-	grid.Print();
-	CubicalSet K = CubeSystem::GetCubicalSet(grid);
-	*/
-
-	AnalyzeCellularAutomata(10, 10, 80, 3, 0, 100);
-
-	std::cout << std::endl;
-
-	/*
-	CubicalSet Q = K;
-	std::cout << "Without CCR: " << std::endl;
-	//std::chrono::steady_clock::time_point beginNoCCR = std::chrono::steady_clock::now();
-	CubeSystem::Homology(Q, false);
-	//std::chrono::steady_clock::time_point endNoCCR = std::chrono::steady_clock::now();
-	//std::cout << "Total time without CCR: " << std::chrono::duration_cast<std::chrono::microseconds>(endNoCCR - beginNoCCR).count() / 1000000.0 << " seconds" << std::endl;
-
-	std::cout << std::endl;;
-	std::cout << "With CCR: " << std::endl;
-	//std::chrono::steady_clock::time_point beginCCR = std::chrono::steady_clock::now();
-	CubeSystem::Homology(K, true);
-	//std::chrono::steady_clock::time_point endCCR = std::chrono::steady_clock::now();
-	//std::cout << "Total time with CCR: " << std::chrono::duration_cast<std::chrono::microseconds>(endCCR - beginCCR).count() / 1000000.0 << " seconds" << std::endl;
-	*/
-	
-
-	/*
-	Grid smooth = Landscape::Smooth(grid, 3, 1);
-	smooth.Print();
-	CubicalSet L = CubeSystem::GetCubicalSet(smooth);
-
-	std::cout << std::endl;;
-	//std::cout << "With CCR: " << std::endl;
-	//std::chrono::steady_clock::time_point beginCCR = std::chrono::steady_clock::now();
-	CubeSystem::Homology(L, true);
-	//std::chrono::steady_clock::time_point endCCR = std::chrono::steady_clock::now();
-	//std::cout << "Total time with CCR: " << std::chrono::duration_cast<std::chrono::microseconds>(endCCR - beginCCR).count() / 1000000.0 << " seconds" << std::endl;
-	*/
-	/*
-	Grid doubleSmooth = Landscape::Smooth(smooth, 3, 1);
-	doubleSmooth.Print();
-	CubicalSet J = CubeSystem::GetCubicalSet(doubleSmooth);
-
-	std::cout << std::endl;;
-	//std::cout << "With CCR: " << std::endl;
-	//std::chrono::steady_clock::time_point beginCCR = std::chrono::steady_clock::now();
-	CubeSystem::Homology(J, true);
-	//std::chrono::steady_clock::time_point endCCR = std::chrono::steady_clock::now();
-	//std::cout << "Total time with CCR: " << std::chrono::duration_cast<std::chrono::microseconds>(endCCR - beginCCR).count() / 1000000.0 << " seconds" << std::endl;
-
-	//Grid3D block = Landscape::CreateBox(3, 3, 3);
-	//Grid3D block = Landscape::CreateSphere(5);
-	//block.Print();
-	//CubicalSet S = CubeSystem::GetCubicalSet(block);
-	//CubeSystem::Homology(S, false);
-	*/
-
-	/*
-	Grid grid(2, 2);
-	grid.setElement(0, 0, 1);
-	grid.setElement(1, 0, 1);
-	grid.setElement(0, 1, 1);
-	grid.setElement(1, 1, 1);
-	CubicalSet K = CubeSystem::GetCubicalSet(grid);
-
-	Cube Q;
-	Q.addInterval(Interval(0));
-	Q.addInterval(Interval(0));
-
-	std::vector<std::unordered_map<Cube, int, KeyHasher>> chains = CubeSystem::CubicalChainGroups(K);
-	std::unordered_map<Cube, int, KeyHasher> boundary = CubeSystem::BoundaryOperator(Q);
-
-	std::vector<Cube> coordinates = CubeSystem::GetCoordinates(chains[1]);
-	std::vector<int> v = CubeSystem::CanonicalCoordinates(boundary, coordinates);
-	*/
-
-	//typedef Givaro::Modular<int> Field;
-	//Field F(101);
-	
-
-
-
-
-
+	AnalyzeCellularAutomata(50, 50, 40, 3, 0, 1);
 	
 }
 
 
 
 // using CCR, it takes 4599 seconds to do a 20x20 grid, correctly reports H_0 = 1 and H_1 = 18.
-
-
-

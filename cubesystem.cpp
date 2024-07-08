@@ -1,5 +1,18 @@
 #include "cubesystem.hpp"
 
+void CubeSystem::Print(Matrix& m)
+{
+	for (int i = 0; i < m.rowdim(); ++i)
+	{
+		std::cout << "[ ";
+		for (int j = 0; j < m.coldim(); ++j)
+		{
+			std::cout << m.getEntry(i, j) << " ";
+		}
+		std::cout << "]" << std::endl;
+	}
+	std::cout << std::endl;
+}
 
 std::vector<int> CubeSystem::CanonicalCoordinates(Chain& c, std::vector<Cube>& cubes)
 {
@@ -162,6 +175,52 @@ BoundaryMap CubeSystem::Boundaries(ChainComplex& E)
 	return bd;
 }
 
+// LinBox version.
+std::vector<Matrix> CubeSystem::BoundaryOperatorMatrixLinBox(std::vector<std::vector<Cube>>& E, BoundaryMap& bd)
+{
+	std::vector<Matrix> matrices;
+
+	for (int k = 1; k < E.size(); ++k)
+	{
+		// bd: K_k --> K_{k-1}.
+		int lastRow = E[k-1].size() - 1;
+		int lastColumn = E[k].size() - 1;
+
+		Matrix matrix(ZZ, lastRow + 1, lastColumn + 1);
+		std::cout << "Computing the " << k << "th boundary matrix. " << std::endl;
+
+
+		// evaluate the boundary operator on each cube of E[k]:
+		for (int j = 0; j < E[k].size(); ++j)
+		{
+			Cube& e = E[k][j];
+			Chain c = bd[k-1][e];
+			std::vector<int> column = CanonicalCoordinates(c, E[k-1]);
+
+			// Set this as the jth column of the matrix, but only nonzero entries.
+			for (int i = 0; i < column.size(); ++i)
+			{
+				if (column[i] != 0)
+					matrix.setEntry(i, j, column[i]);
+			}
+		}
+		matrix.finalize();
+		std::cout << "Built boundary matrix with size " << matrix.size() << " and dimension ";
+		std::cout << matrix.rowdim() << " x " << matrix.coldim() << std::endl;
+
+		matrices.push_back(matrix);
+	}
+		
+	// Export the 0th boundary matrix to a file for testing.
+	std::ofstream output("output.txt");
+	if (output.is_open())
+	{
+		matrices[0].write(output);
+		output.close();
+	}
+
+	return matrices;
+}
 std::vector<IntMat> CubeSystem::BoundaryOperatorMatrix(std::vector<std::vector<Cube>>& E, BoundaryMap& bd)
 {
 	std::vector<IntMat> matrices;
@@ -181,6 +240,36 @@ std::vector<IntMat> CubeSystem::BoundaryOperatorMatrix(std::vector<std::vector<C
 			Chain c = bd[k-1][e];
 			std::vector<int> column = CanonicalCoordinates(c, E[k-1]);
 			matrix.setColumn(j, column);
+		}
+
+		matrices.push_back(matrix);
+	}
+
+	return matrices;
+}
+std::vector<Matrix> CubeSystem::BoundaryOperatorMatrixLinBox(std::vector<std::vector<Cube>>& E)
+{
+	std::vector<Matrix> matrices;
+
+	for (int k = 1; k < E.size(); ++k)
+	{
+		// bd: K_k --> K_{k-1}.
+		int lastRow = E[k-1].size() - 1;
+		int lastColumn = E[k].size() - 1;
+
+		Matrix matrix(ZZ, lastRow + 1, lastColumn + 1);
+
+		// evaluate the boundary operator on each cube of E[k]:
+		for (int j = 0; j < E[k].size(); ++j)
+		{
+			Chain c = BoundaryOperator(E[k][j]);
+			std::vector<int> column = CanonicalCoordinates(c, E[k-1]);
+
+			// Set this as the jth column of the matrix.
+			for (int i = 0; i < column.size(); ++i)
+			{
+				matrix.setEntry(i, j, column[i]);
+			}
 		}
 
 		matrices.push_back(matrix);
@@ -215,6 +304,53 @@ std::vector<IntMat> CubeSystem::BoundaryOperatorMatrix(std::vector<std::vector<C
 }
 
 
+std::vector<std::vector<int>> CubeSystem::GetHomologyLinBox(CubicalSet& K, bool CCR)
+{
+	// get the generators for C_k:
+	std::vector<std::unordered_map<Cube, int, KeyHasher>> chainGroups = CubicalChainGroups(K);
+	
+	// convert the generators into coordinates:
+	std::vector<std::vector<Cube>> E;
+	for (int i = 0; i < chainGroups.size(); ++i)
+	{
+		E.push_back(GetCoordinates(chainGroups[i]));
+	}
+
+	//std::vector<IntMat> D;
+	std::vector<Matrix> matrices;
+
+	if (CCR)
+	{
+		// get the boundary operators:
+		BoundaryMap bd = Boundaries(E);
+
+		// apply the CCR algorithm:
+		ReduceChainComplex(E, bd);		
+	
+		// get the boundary operator matrices from the chains:
+		//D = BoundaryOperatorMatrix(E, bd);
+		matrices = BoundaryOperatorMatrixLinBox(E, bd);
+	}
+	else
+	{
+		// get the boundary operator matrices from the chains:
+		//D = BoundaryOperatorMatrix(E);
+		matrices = BoundaryOperatorMatrixLinBox(E);
+	}
+
+	// compute the homology groups:
+	std::vector<std::vector<int>> homLinBox = Homology::GetHomologyLinBox(matrices);
+	for (int i = 0; i < homLinBox.size(); ++i)
+	{
+		for (int j = 0; j < homLinBox[i].size(); ++j)
+		{
+			std::cout << homLinBox[i][j] << " ";
+		}
+		std::cout << std::endl;
+	}
+	return homLinBox;
+}
+
 std::vector<std::vector<int>> CubeSystem::GetHomology(CubicalSet& K, bool CCR)
 {
 	// get the generators for C_k:
@@ -228,6 +364,7 @@ std::vector<std::vector<int>> CubeSystem::GetHomology(CubicalSet& K, bool CCR)
 	}
 
 	std::vector<IntMat> D;
+
 	if (CCR)
 	{
 		// get the boundary operators:
@@ -247,6 +384,14 @@ std::vector<std::vector<int>> CubeSystem::GetHomology(CubicalSet& K, bool CCR)
 
 	// compute the homology groups:
 	std::vector<std::vector<int>> hom = Homology::GetHomology(D);
+	for (int i = 0; i < hom.size(); ++i)
+	{
+		for (int j = 0; j < hom[i].size(); ++j)
+		{
+			std::cout << hom[i][j] << " ";
+		}
+		std::cout << std::endl;
+	}
 	return hom;
 }
 
