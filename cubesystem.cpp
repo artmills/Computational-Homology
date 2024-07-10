@@ -212,12 +212,14 @@ std::vector<Matrix> CubeSystem::BoundaryOperatorMatrixLinBox(std::vector<std::ve
 	}
 		
 	// Export the 0th boundary matrix to a file for testing.
+	/*
 	std::ofstream output("output.txt");
 	if (output.is_open())
 	{
 		matrices[0].write(output);
 		output.close();
 	}
+	*/
 
 	return matrices;
 }
@@ -345,6 +347,15 @@ std::vector<std::vector<int>> CubeSystem::GetHomologyLinBox(CubicalSet& K, bool 
 		for (int j = 0; j < homLinBox[i].size(); ++j)
 		{
 			std::cout << homLinBox[i][j] << " ";
+		}
+		std::cout << std::endl;
+	}
+	std::vector<std::vector<int>> homValence = Homology::GetHomologyValence(matrices);
+	for (int i = 0; i < homValence.size(); ++i)
+	{
+		for (int j = 0; j < homValence[i].size(); ++j)
+		{
+			std::cout << homValence[i][j] << " ";
 		}
 		std::cout << std::endl;
 	}

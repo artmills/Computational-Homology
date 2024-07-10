@@ -285,7 +285,7 @@ void AnalyzeCellularAutomata(int gridX, int gridY, int fillPercent, int toleranc
 
 int main()
 {
-	AnalyzeCellularAutomata(50, 50, 40, 3, 0, 1);
+	AnalyzeCellularAutomata(20, 20, 40, 3, 0, 1);
 	
 }
 

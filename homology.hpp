@@ -7,8 +7,10 @@
 #include <linbox/matrix/sparse-matrix.h>
 #include <linbox/matrix/sparse-formats.h>
 #include <linbox/solutions/smith-form.h>
-#include <linbox/algorithms/smith-form-adaptive.h>
 #include <linbox/solutions/methods.h>
+#include <linbox/algorithms/smith-form-adaptive.h>
+#include <linbox/algorithms/smith-form-valence.h>
+#include <fflas-ffpack/paladin/parallel.h>
 
 #include "matsystem.hpp"
 #include "smith.hpp"
@@ -17,9 +19,10 @@
 
 // LinBox typedefs:
 typedef Givaro::ZRing<Givaro::Integer> Integers;
-typedef LinBox::SparseMatrix<Integers, LinBox::SparseMatrixFormat::COO> Matrix;
-//typedef LinBox::SparseMatrix<Integers> Matrix;
+//typedef LinBox::SparseMatrix<Integers, LinBox::SparseMatrixFormat::COO> Matrix;
+typedef LinBox::SparseMatrix<Integers> Matrix;
 typedef LinBox::SmithList<Integers> SmithList;
+typedef std::vector<std::pair<int, int>> List;
 
 // implements algorithms to analyze matrices representing functions
 // between finitely generated free abelian groups to compute homology
@@ -28,6 +31,10 @@ namespace Homology
 {
 	// LinBox: global variable for the ring of integers.
 	Integers ZZ;
+
+	// LinBox: valence algorithm for Smith normal form.
+	// Found as examples/smithsparce.c in the LinBox Github.
+	List GetSmithForm(Matrix& A);	
 
 	// returns the kernel and image of a matrix.
 	// these are returned in the form of two matrices: the first
@@ -59,6 +66,7 @@ namespace Homology
 
 	// LinBox version.
 	std::vector<std::vector<int>> GetHomologyLinBox(std::vector<Matrix>& boundaries);
+	std::vector<std::vector<int>> GetHomologyValence(std::vector<Matrix>& boundaries);
 	
 	void AnalyzeHomology(std::vector<std::vector<int>> homologies);
 
@@ -68,4 +76,5 @@ namespace Homology
 
 	// LinBox version.
 	std::vector<int> GetIthHomologyLinBox(SmithList& sl, int s, int t, int rows, int rankd);
+	std::vector<int> GetIthHomologyLinBox(List& sl, int s, int t, int rows, int rankd);
 }
