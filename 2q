@@ -327,9 +327,10 @@ std::vector<std::vector<int>> CubeSystem::GetHomologyLinBox(CubicalSet& K, bool 
 		// apply the CCR algorithm:
 		//ReduceChainComplex(E, bd);		
 
-		int ITERATIONS = 500;
+		int ITERATIONS = 1;
 		for (int i = 0; i < ITERATIONS; ++i)
 		{
+			std::cout << "Reducing: " << i << std::endl;
 			ReduceChainComplex(E, bd);
 		}
 	
@@ -519,62 +520,24 @@ void CubeSystem::Reduce(ChainComplex& E, BoundaryMap& bd, int i, Cube& a, Cube& 
 */
 void CubeSystem::Reduce(ChainComplex& E, BoundaryMap& bd, int i, Cube& a, Cube& b)
 {
-	/*
-	std::cout << "*************************" << std::endl;
-	std::cout << "Cube b: " << std::endl;
-	b.Print();
-	std::cout << "Cube a: " << std::endl;
-	a.Print();
-	*/
-
+	std::cout << "i = " << i << std::endl;
 	// Remove b as a boundary of all (i+1)-dim cubes.
-	if (i < E.size() - 1)
+	for (Cube cube : E[i+1])
 	{
-		for (Cube cube : E[i+1])
-		{
-			if (bd[i][cube].find(b) != bd[i][cube].end())
-			{
-				/*
-				std::cout << "Erasing b from cube: " << std::endl;
-				cube.Print();
-				*/
-				bd[i][cube].erase(b);
-			}
-		}
+		bd[i+1][cube].erase(b);
 	}
 
-	// Update the other affected i-dim cubes.
-	for (Cube cube : E[i])
+	for (Cube cube : E[i-1])
 	{
-		if (cube == b)
-			continue;
-
-		// Only update if a was attached to cube.
-		if (bd[i-1][cube].find(a) != bd[i-1][cube].end())
-		{
-			/*
-			std::cout << "** Found cube attached to a: " << std::endl;
-			cube.Print();
-			*/
-
-			// For all cubes attached to b, update:
+		//if (bd[i-2][cube].find(a) != bd[i-2][cube].end())
+		//{
 			for (auto it : bd[i-1][b])
 			{
-				const Cube& c = it.first;
-				/*
-				std::cout << "* Recalculating boundary of cube: " << std::endl;
-				c.Print();
-				*/
-
-				/*
-				std::cout << "Original value: ";
-				std::cout << bd[i-1][cube][c] << ". ";
-				std::cout << "New value: ";
-				std::cout << bd[i-1][cube][c] << ". " << std::endl;
-				*/
-				bd[i-1][cube][c] -= bd[i-1][cube][a] * bd[i-1][b][a] * bd[i-1][b][c];
+				//std::cout << bd[i-1][cube][it.first] << std::endl;
+				bd[i-1][cube][it.first] -= bd[i-1][cube][a] * bd[i-1][b][a] * bd[i-1][b][it.first];
+				//std::cout << bd[i-1][cube][it.first] << std::endl;
 			}
-		}
+		//}
 	}
 
 	RemoveElementFromVector(E[i], b);		
@@ -646,11 +609,15 @@ void CubeSystem::ReduceChainComplex(ChainComplex& E, BoundaryMap& bd)
 // Not entirely sure why, but this seems to fix the issue.
 void CubeSystem::ReduceChainComplex(ChainComplex& E, BoundaryMap& bd)
 {
+	std::cout << "Size of chain complex: " << E.size() << std::endl;
+	for (int i = 0; i < E.size(); ++i)
+	{
+		std::cout << E[i].size() << std::endl;
+	}
 	// The index i is the dimension we are looking at.
 	// Attempting to reduce an i-dim face by an (i-1)-dim face.
 	// Start at i equal to the top dimension, down to i=1 (edges).
-	//for (int i = E.size() - 1; i > 1; --i)
-	for (int i = E.size() - 1; i > E.size() - 2; --i)
+	for (int i = E.size() - 1; i > 2; --i)
 	{
 		bool found = false;
 		while (!found)
@@ -668,16 +635,20 @@ void CubeSystem::ReduceChainComplex(ChainComplex& E, BoundaryMap& bd)
 						break;
 					//if (bd[i-1].find(b) != bd[i-1].end())
 				//	{
-						if (bd[i-1][b].find(a) != bd[i-1][b].end())
-						{
+				//		if (bd[i-1][b].find(a) != bd[i-1][b].end())
+				//		{
 							// Recall bd[i-1] is the boundary from C_i to C_{i-1}, so use bd[i-1](b).
 							if (std::abs(bd[i-1][b][a]) == 1)
 							{
+								std::cout << "Reducing: " << std::endl;
+								a.Print();
+								b.Print();
+
 								Reduce(E, bd, i, a, b);
 								found = true;
 								break;
 							}
-						}
+				//		}
 				//	}
 				}
 			}

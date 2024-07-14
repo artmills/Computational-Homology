@@ -634,7 +634,12 @@ std::vector<std::vector<int>> Homology::GetHomologyValence(std::vector<Matrix>& 
 		// Compute the Smith normal form.
 		std::cout << "Computing smith form of the " << i << "th boundary matrix with size ";
 		std::cout << boundaries[i].rowdim() << " x " << boundaries[i].coldim() << std::endl;
-		List sl = GetSmithForm(boundaries[i]);
+
+		List sl;
+		if (boundaries[i].rowdim() != 0 && boundaries[i].coldim() != 0)
+			sl = GetSmithForm(boundaries[i]);
+		else
+			sl.push_back(std::pair<int, int>(0, 1));
 
 		// Convert the SmithList structure from LinBox into arrays that keep track of s, t.
 		int t = -1;

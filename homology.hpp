@@ -19,8 +19,8 @@
 
 // LinBox typedefs:
 typedef Givaro::ZRing<Givaro::Integer> Integers;
-//typedef LinBox::SparseMatrix<Integers, LinBox::SparseMatrixFormat::COO> Matrix;
-typedef LinBox::SparseMatrix<Integers> Matrix;
+typedef LinBox::SparseMatrix<Integers, LinBox::SparseMatrixFormat::COO> Matrix;
+//typedef LinBox::SparseMatrix<Integers> Matrix;
 typedef LinBox::SmithList<Integers> SmithList;
 typedef std::vector<std::pair<int, int>> List;
 

@@ -25,8 +25,8 @@ typedef std::vector<Boundary> BoundaryMap;
 
 // Linbox typedefs for convenience.
 typedef Givaro::ZRing<Givaro::Integer> Integers;
-typedef LinBox::SparseMatrix<Integers> Matrix;
-//typedef LinBox::SparseMatrix<Integers, LinBox::SparseMatrixFormat::COO> Matrix;
+//typedef LinBox::SparseMatrix<Integers> Matrix;
+typedef LinBox::SparseMatrix<Integers, LinBox::SparseMatrixFormat::COO> Matrix;
 
 // responsible for performing operations on cubes.
 namespace CubeSystem
