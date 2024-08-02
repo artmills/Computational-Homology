@@ -20,7 +20,11 @@ public:
 private:
 
 	std::vector<IntMat> B;
+
+	// The first s diagonal entries are equal to 1.
 	int s;
+
+	// The number of nonzero diagonal entries - 1.
 	int t;
 
 };

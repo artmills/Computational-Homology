@@ -1,4 +1,11 @@
 #include "homology.hpp"
+#include <givaro/givintfactor.h>
+#include <linbox/algorithms/smith-form-adaptive.h>
+#include <linbox/field/field-traits.h>
+#include <linbox/integer.h>
+#include <linbox/linbox-tags.h>
+#include <linbox/solutions/solution-tags.h>
+#include <linbox/vector/vector.h>
 
 std::vector<IntMat> Homology::KernelImage(IntMat& B)
 {
@@ -424,6 +431,333 @@ void Homology::AnalyzeHomology(std::vector<Quotient> groups)
 	}
 }
 
+// Valence algorithm for the Smith normal form.
+List Homology::GetSmithForm(Matrix& A)
+{
+	// For mysterious reasons, the LinBox LRank function needs the matrix given as a file... just to convert it back to a matrix.
+	// For now, just go ahead and convert the matrix to a file and pass it back to LRank.
+	// In the future, change the LRank function itself and then make a pull request.
+	std::ofstream outFile("temp.txt");
+	if (outFile.is_open())
+	{
+		A.write(outFile);
+		outFile.close();
+	}
+	else
+		std::cout << "FILE OPENING ERROR IN EXPORTING BOUNDARY MATRIX." << std::endl;
+	
+	// Transpose the matrix and find either A^TA or AA^T depending on the dimensions.
+	// Then compute the valence.
+	Integers::Element valence;
+	LinBox::Transpose<Matrix> T(&A);
+	if (A.rowdim() > A.coldim()) // A^TA
+	{
+		LinBox::Compose<LinBox::Transpose<Matrix>, Matrix> C(&T, &A);
+		LinBox::valence(valence, C);
+	}
+	else if (A.rowdim() < A.coldim()) // AA^T
+	{
+		LinBox::Compose<Matrix, LinBox::Transpose<Matrix>> C(&A, &T);
+		LinBox::valence(valence, C);
+	}
+	else // Square
+	{
+		LinBox::valence(valence, A);
+	}
+	//std::cout << "The valence of the matrix is " << valence << std::endl;
+
+	// Coprime integers.
+	std::vector<LinBox::integer> moduli;
+	std::vector<size_t> exponents;
+	Givaro::IntFactorDom<> ftd;
+
+	typedef std::pair<LinBox::integer, unsigned long> PairIntRk;
+	std::vector<PairIntRk> smith;
+
+	LinBox::integer coprimeV = 2;
+	while (Givaro::gcd(valence, coprimeV) > 1)
+	{
+		ftd.nextprimein(coprimeV);
+	}
+
+	// LRank function.
+	unsigned long coprimeR;
+	LinBox::LRank(coprimeR, "temp.txt", coprimeV);
+	smith.push_back(PairIntRk(coprimeV, coprimeR));
+	//std::cout << "Rank mod " << coprimeV << " is " << coprimeR << std::endl;
+
+	// Factors: 5000 loop bound.
+	ftd.set(moduli, exponents, valence, 5000);
+	std::vector<size_t>::const_iterator eit = exponents.begin();
+	/*
+	for (std::vector<LinBox::integer>::const_iterator mit = moduli.begin(); mit != moduli.end(); ++mit, ++eit)
+	{
+		std::cout << *mit << '^' << *eit << ' ' << std::endl;
+	}
+	*/
+
+	// LRank again.
+	std::vector<LinBox::integer> smithDiagonal(coprimeR, LinBox::integer(1));
+	for (std::vector<LinBox::integer>::const_iterator mit = moduli.begin(); mit != moduli.end(); ++mit)
+	{
+		size_t r;
+		LinBox::LRank(r, "temp.txt", *mit);
+		//std::cout << "Rank mod " << *mit << " is " << r << std::endl;
+		smith.push_back(LinBox::PairIntRk(*mit, r));
+		for (size_t i = r; i < coprimeR; ++i)
+		{
+			smithDiagonal[i] *= *mit;
+		}
+	}
+
+	// Smith.
+	eit = exponents.begin();
+	std::vector<PairIntRk>::const_iterator sit = smith.begin();
+	for (++sit; sit != smith.end(); ++sit, ++eit)
+	{
+		if (sit->second != coprimeR)
+		{
+			std::vector<size_t> ranks;
+			ranks.push_back(sit->second);
+			size_t effexp;
+
+			if (*eit > 1)
+				LinBox::PRank(ranks, effexp, "temp.txt", sit->first, *eit, coprimeR);
+			else
+				LinBox::PRank(ranks, effexp, "temp.txt", sit->first, 2, coprimeR);
+
+			if (ranks.size() == 1)
+				ranks.push_back(coprimeR);
+
+			if (effexp < *eit)
+			{
+				for (size_t expo = effexp<<1; ranks.back() < coprimeR; expo<<1)
+				{
+					LinBox::PRankInteger(ranks, "temp.txt", sit->first, expo, coprimeR);
+				}
+			}
+			else
+			{
+				for (size_t expo = (*eit)<<1; ranks.back() < coprimeR; expo<<1)
+				{
+					LinBox::PRank(ranks, effexp, "temp.txt", sit->first, expo, coprimeR);
+					if (ranks.size() < expo)
+					{
+						std::cout << "It seems we need a larger prime power, it will take longer..." << std::endl;
+						LinBox::PRankInteger(ranks, "temp.txt", sit->first, expo, coprimeR);
+					}
+				}
+			}
+
+			std::vector<size_t>::const_iterator rit = ranks.begin();
+			for (++rit; rit != ranks.end(); ++rit)
+			{
+				if ((*rit) >= coprimeR)
+					break;
+				for (size_t i = (*rit); i < coprimeR; ++i)
+				{
+					smithDiagonal[i] *= sit->first;
+				}
+			}
+		}
+	}
+
+	// Convert the smithDiagonal into a SmithList.
+	List sl;
+	int previous = 1;
+	int count = 0;
+	sl.push_back(std::pair<int, int>(previous, count));
+	for (int i = 0; i < smithDiagonal.size(); ++i)
+	{
+		// Already seen this element of the diagonal: increase count.
+		int current = smithDiagonal[i];
+		if (current == previous)
+			++count;
+		// New element:
+		else
+		{
+			// Publish in SmithList:
+			sl.push_back(std::pair<int, int>(previous, count));
+			previous = current;
+			count = 0;	
+		}
+	}
+	// Extra check for if there was only one element in the diagonal.
+	std::pair<int, int>& firstElement = sl[0];
+	if (firstElement.first == 1)
+		firstElement.second = count;
+
+	// Output smith form.
+	/*
+	LinBox::integer si = 1;
+	size_t num = 0;
+	std::cout << '(';
+	for (std::vector<LinBox::integer>::const_iterator dit = smithDiagonal.begin(); dit != smithDiagonal.end(); ++dit)
+	{
+		if (*dit == si)
+			++ num;
+		else
+		{
+			if (num > 0)
+				std::cout << '[' << si << ',' << num << "] ";
+			num = 1;
+			si = *dit;
+		}
+	}
+	std::cout << '[' << si << ',' << num << "] )" << std::endl;
+	*/
+
+	/*
+	for (int i = 0; i < sl.size(); ++i)
+	{
+		std::cout << sl[i].first << " " << sl[i].second << std::endl;
+	}
+	*/
+
+	return sl;
+}
+
+// LinBox version.
+std::vector<std::vector<int>> Homology::GetHomologyValence(std::vector<Matrix>& boundaries)
+{
+	// matrices[i] = d_{i+1}: C_{i+1} -> C_i where matrices[0] = d_1.
+	// there is no reason to pass d_0 since it is the zero matrix.
+	// similarly, there is no reason to pass d_{n+1}.
+
+	// LinBox: get the info for the Smith normal form and convert to s, t lists.
+	std::vector<List> smithLists;
+	std::vector<int> sList(boundaries.size(), -1);
+	std::vector<int> tList(boundaries.size(), -1);
+	std::vector<int> rowList(boundaries.size(), -1); // Number of rows.
+	for (int i = 0; i < boundaries.size(); ++i)
+	{
+		// Compute the Smith normal form.
+		std::cout << "Computing smith form of the " << i << "th boundary matrix with size ";
+		std::cout << boundaries[i].rowdim() << " x " << boundaries[i].coldim() << std::endl;
+
+		List sl;
+		if (boundaries[i].rowdim() != 0 && boundaries[i].coldim() != 0)
+			sl = GetSmithForm(boundaries[i]);
+		else
+			sl.push_back(std::pair<int, int>(0, 1));
+
+		// Convert the SmithList structure from LinBox into arrays that keep track of s, t.
+		int t = -1;
+		int s = -1;
+		for (int i = 0; i < sl.size(); ++i)
+		{
+			std::pair p = sl[i];
+			
+			// t counts the number of nonzero diagonal entries minus 1 (which is why we initialize to -1).
+			if (p.first != 0)
+				t += p.second;
+			// s counts the number of diagonal entries equal to 1.
+			if (p.first == 1)
+				s = p.second;
+		}
+		// Set into the corresponding arrays.
+		smithLists.push_back(sl);
+		sList[i] = s;
+		tList[i] = t;
+		rowList[i] = boundaries[i].rowdim();
+	}
+
+	// output will be stored in arrays of integers.
+	// the last element of each array is the Betti number.
+	// the first elements are the torsion coefficients.
+	std::vector<std::vector<int>> homologies;
+	
+	// handle the H_0 case individually.
+	List& sl0 = smithLists[0];
+	homologies.push_back(GetIthHomologyLinBox(sl0, sList[0], tList[0], rowList[0], 0));
+
+	// H_1 to H_{n-1}.
+	for (int i = 1; i < smithLists.size(); ++i)
+	{
+		List& sl = smithLists[i];
+		homologies.push_back(GetIthHomologyLinBox(sl, sList[i], tList[i], rowList[i], tList[i-1] + 1));
+	}
+
+	// handle the H_n case individually:
+	List& snfn = smithLists[smithLists.size() - 1];
+	//std::vector<int> Hn = {snfn.getB().getColumns() - (snfn.getT() + 1)};
+	std::vector<int> Hn = {(int)boundaries[boundaries.size() - 1].coldim() - (tList[smithLists.size() - 1] + 1)};
+	//int nColumns = (int)boundaries[boundaries.size() - 1].coldim();
+	homologies.push_back(Hn);
+
+	return homologies;
+}
+std::vector<std::vector<int>> Homology::GetHomologyLinBox(std::vector<Matrix>& boundaries)
+{
+	// matrices[i] = d_{i+1}: C_{i+1} -> C_i where matrices[0] = d_1.
+	// there is no reason to pass d_0 since it is the zero matrix.
+	// similarly, there is no reason to pass d_{n+1}.
+
+	// LinBox: get the info for the Smith normal form and convert to s, t lists.
+	std::vector<SmithList> smithLists;
+	std::vector<int> sList(boundaries.size(), -1);
+	std::vector<int> tList(boundaries.size(), -1);
+	std::vector<int> rowList(boundaries.size(), -1); // Number of rows.
+	for (int i = 0; i < boundaries.size(); ++i)
+	{
+		// Compute the Smith normal form.
+		std::cout << "Computing smith form of the " << i << "th boundary matrix with size ";
+		std::cout << boundaries[i].rowdim() << " x " << boundaries[i].coldim() << std::endl;
+
+		SmithList sl;
+		LinBox::smithForm(sl, boundaries[i]);
+		/*
+		for (auto it = sl.begin(); it != sl.end(); ++it)
+		{
+			std::cout << it->first << " " << it->second << std::endl;
+		}
+		*/
+
+		// Convert the SmithList structure from LinBox into arrays that keep track of s, t.
+		int t = -1;
+		int s = -1;
+		for (auto it = sl.begin(); it != sl.end(); ++it)
+		{
+			std::pair p = *it;
+			
+			// t counts the number of nonzero diagonal entries minus 1 (which is why we initialize to -1).
+			if (p.first != 0)
+				t += p.second;
+			// s counts the number of diagonal entries equal to 1.
+			if (p.first == 1)
+				s = p.second;
+		}
+		// Set into the corresponding arrays.
+		smithLists.push_back(sl);
+		sList[i] = s;
+		tList[i] = t;
+		rowList[i] = boundaries[i].rowdim();
+	}
+
+	// output will be stored in arrays of integers.
+	// the last element of each array is the Betti number.
+	// the first elements are the torsion coefficients.
+	std::vector<std::vector<int>> homologies;
+	
+	// handle the H_0 case individually.
+	SmithList& sl0 = smithLists[0];
+	homologies.push_back(GetIthHomologyLinBox(sl0, sList[0], tList[0], rowList[0], 0));
+
+	// H_1 to H_{n-1}.
+	for (int i = 1; i < smithLists.size(); ++i)
+	{
+		SmithList& sl = smithLists[i];
+		homologies.push_back(GetIthHomologyLinBox(sl, sList[i], tList[i], rowList[i], tList[i-1] + 1));
+	}
+
+	// handle the H_n case individually:
+	SmithList& snfn = smithLists[smithLists.size() - 1];
+	std::vector<int> Hn = {(int)boundaries[boundaries.size() - 1].coldim() - (tList[smithLists.size() - 1] + 1)};
+	homologies.push_back(Hn);
+	
+	return homologies;
+}
+
 std::vector<std::vector<int>> Homology::GetHomology(std::vector<IntMat>& boundaries)
 {
 	// matrices[i] = d_{i+1}: C_{i+1} -> C_i where matrices[0] = d_1.
@@ -437,6 +771,8 @@ std::vector<std::vector<int>> Homology::GetHomology(std::vector<IntMat>& boundar
 	{
 		SmithLite snf = MatSystem::GetSmithFormLite(boundaries[i]);
 		//snf.getB().Print();
+		//std::cout << "s = " << snf.getS() << ". t = " << snf.getT() << std::endl;
+		//std::cout << std::endl;
 		smithForms.push_back(snf);
 	}
 
@@ -480,6 +816,57 @@ void Homology::AnalyzeHomology(std::vector<std::vector<int>> homologies)
 	}
 }
 
+// LinBox version.
+std::vector<int> Homology::GetIthHomologyLinBox(List& sl, int s, int t, int rows, int rankd)
+{
+	std::vector<int> homology;
+
+	// get torsion coefficients, which are the nonzero/nonidentity diagonal entries.
+	for (int i = 0; i < sl.size(); ++i)
+	{
+		std::pair p = sl[i];
+		int value = p.first;
+		if (value != 0 && value != 1)
+		{
+			// Now add the value the appropriate number of times.
+			int count = p.second;
+			for (int j = 0; j < count; ++j)
+				homology.push_back(value);
+		}
+	}
+
+	// get betti number r: r = rank(C_i)
+	int betti = rows - rankd;
+	homology.push_back(betti - (t+1));
+
+
+	return homology;	
+}
+// LinBox version.
+std::vector<int> Homology::GetIthHomologyLinBox(SmithList& sl, int s, int t, int rows, int rankd)
+{
+	std::vector<int> homology;
+
+	// get torsion coefficients, which are the nonzero/nonidentity diagonal entries.
+	for (auto it = sl.begin(); it != sl.end(); ++it)
+	{
+		std::pair p = *it;
+		int value = p.first;
+		if (value != 0 && value != 1)
+		{
+			// Now add the value the appropriate number of times.
+			int count = p.second;
+			for (int j = 0; j < count; ++j)
+				homology.push_back(value);
+		}
+	}
+
+	// get betti number r: r = rank(C_i)
+	int betti = rows - rankd;
+	homology.push_back(betti - (t+1));
+
+	return homology;	
+}
 std::vector<int> Homology::GetIthHomology(SmithLite& D, int rankd)
 {
 	IntMat& B = D.getB();

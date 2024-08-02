@@ -1,5 +1,18 @@
 #include "cubesystem.hpp"
 
+void CubeSystem::Print(Matrix& m)
+{
+	for (int i = 0; i < m.rowdim(); ++i)
+	{
+		std::cout << "[ ";
+		for (int j = 0; j < m.coldim(); ++j)
+		{
+			std::cout << m.getEntry(i, j) << " ";
+		}
+		std::cout << "]" << std::endl;
+	}
+	std::cout << std::endl;
+}
 
 std::vector<int> CubeSystem::CanonicalCoordinates(Chain& c, std::vector<Cube>& cubes)
 {
@@ -76,10 +89,10 @@ std::vector<Cube> CubeSystem::GetCoordinates(std::unordered_map<Cube, int, KeyHa
 
 std::vector<std::unordered_map<Cube, int, KeyHasher>> CubeSystem::CubicalChainGroups(CubicalSet& K)
 {
-	//std::cout << "Dimension of the cubical set K: " << K.Dimension() << std::endl;
+	std::cout << "Dimension of the cubical set K: " << K.Dimension() << std::endl;
 	std::vector<std::unordered_map<Cube, int, KeyHasher>> E(K.Dimension() + 1);	
 
-	//std::cout << "Number of chain groups to consider: " << E.size() << std::endl;
+	std::cout << "Number of chain groups to consider: " << E.size() << std::endl;
 	
 	while (!K.isEmpty())
 	{
@@ -88,11 +101,9 @@ std::vector<std::unordered_map<Cube, int, KeyHasher>> CubeSystem::CubicalChainGr
 
 		Cube Q = K.Pop();
 
-		/*
-		std::cout << "The current cube being considered in K is: " << std::endl;
-		Q.Print();
-		std::cout << "with dimension: " << Q.Dimension() << std::endl;
-		*/
+		//std::cout << "The current cube being considered in K is: " << std::endl;
+		//Q.Print();
+		//std::cout << "with dimension: " << Q.Dimension() << std::endl;
 
 
 		int k = Q.Dimension();
@@ -162,6 +173,54 @@ BoundaryMap CubeSystem::Boundaries(ChainComplex& E)
 	return bd;
 }
 
+// LinBox version.
+std::vector<Matrix> CubeSystem::BoundaryOperatorMatrixLinBox(std::vector<std::vector<Cube>>& E, BoundaryMap& bd)
+{
+	std::vector<Matrix> matrices;
+
+	for (int k = 1; k < E.size(); ++k)
+	{
+		// bd: K_k --> K_{k-1}.
+		int lastRow = E[k-1].size() - 1;
+		int lastColumn = E[k].size() - 1;
+
+		Matrix matrix(ZZ, lastRow + 1, lastColumn + 1);
+		std::cout << "Computing the " << k << "th boundary matrix. " << std::endl;
+
+
+		// evaluate the boundary operator on each cube of E[k]:
+		for (int j = 0; j < E[k].size(); ++j)
+		{
+			Cube& e = E[k][j];
+			Chain c = bd[k-1][e];
+			std::vector<int> column = CanonicalCoordinates(c, E[k-1]);
+
+			// Set this as the jth column of the matrix, but only nonzero entries.
+			for (int i = 0; i < column.size(); ++i)
+			{
+				if (column[i] != 0)
+					matrix.setEntry(i, j, column[i]);
+			}
+		}
+		matrix.finalize();
+		std::cout << "Built boundary matrix with size " << matrix.size() << " and dimension ";
+		std::cout << matrix.rowdim() << " x " << matrix.coldim() << std::endl;
+
+		matrices.push_back(matrix);
+	}
+		
+	// Export the 0th boundary matrix to a file for testing.
+	/*
+	std::ofstream output("output.txt");
+	if (output.is_open())
+	{
+		matrices[0].write(output);
+		output.close();
+	}
+	*/
+
+	return matrices;
+}
 std::vector<IntMat> CubeSystem::BoundaryOperatorMatrix(std::vector<std::vector<Cube>>& E, BoundaryMap& bd)
 {
 	std::vector<IntMat> matrices;
@@ -181,6 +240,36 @@ std::vector<IntMat> CubeSystem::BoundaryOperatorMatrix(std::vector<std::vector<C
 			Chain c = bd[k-1][e];
 			std::vector<int> column = CanonicalCoordinates(c, E[k-1]);
 			matrix.setColumn(j, column);
+		}
+
+		matrices.push_back(matrix);
+	}
+
+	return matrices;
+}
+std::vector<Matrix> CubeSystem::BoundaryOperatorMatrixLinBox(std::vector<std::vector<Cube>>& E)
+{
+	std::vector<Matrix> matrices;
+
+	for (int k = 1; k < E.size(); ++k)
+	{
+		// bd: K_k --> K_{k-1}.
+		int lastRow = E[k-1].size() - 1;
+		int lastColumn = E[k].size() - 1;
+
+		Matrix matrix(ZZ, lastRow + 1, lastColumn + 1);
+
+		// evaluate the boundary operator on each cube of E[k]:
+		for (int j = 0; j < E[k].size(); ++j)
+		{
+			Chain c = BoundaryOperator(E[k][j]);
+			std::vector<int> column = CanonicalCoordinates(c, E[k-1]);
+
+			// Set this as the jth column of the matrix.
+			for (int i = 0; i < column.size(); ++i)
+			{
+				matrix.setEntry(i, j, column[i]);
+			}
 		}
 
 		matrices.push_back(matrix);
@@ -215,6 +304,70 @@ std::vector<IntMat> CubeSystem::BoundaryOperatorMatrix(std::vector<std::vector<C
 }
 
 
+std::vector<std::vector<int>> CubeSystem::GetHomologyLinBox(CubicalSet& K, bool CCR)
+{
+	// get the generators for C_k:
+	std::vector<std::unordered_map<Cube, int, KeyHasher>> chainGroups = CubicalChainGroups(K);
+	
+	// convert the generators into coordinates:
+	std::vector<std::vector<Cube>> E;
+	for (int i = 0; i < chainGroups.size(); ++i)
+	{
+		E.push_back(GetCoordinates(chainGroups[i]));
+	}
+
+	//std::vector<IntMat> D;
+	std::vector<Matrix> matrices;
+
+	if (CCR)
+	{
+		// get the boundary operators:
+		BoundaryMap bd = Boundaries(E);
+
+		// apply the CCR algorithm:
+		//ReduceChainComplex(E, bd);		
+
+		int ITERATIONS = 500;
+		for (int i = 0; i < ITERATIONS; ++i)
+		{
+			ReduceChainComplex(E, bd);
+		}
+	
+		// get the boundary operator matrices from the chains:
+		//D = BoundaryOperatorMatrix(E, bd);
+		matrices = BoundaryOperatorMatrixLinBox(E, bd);
+	}
+	else
+	{
+		// get the boundary operator matrices from the chains:
+		//D = BoundaryOperatorMatrix(E);
+		matrices = BoundaryOperatorMatrixLinBox(E);
+	}
+
+	// compute the homology groups:
+	/*
+	std::vector<std::vector<int>> homLinBox = Homology::GetHomologyLinBox(matrices);
+	for (int i = 0; i < homLinBox.size(); ++i)
+	{
+		for (int j = 0; j < homLinBox[i].size(); ++j)
+		{
+			std::cout << homLinBox[i][j] << " ";
+		}
+		std::cout << std::endl;
+	}
+	*/
+	std::vector<std::vector<int>> homologies = Homology::GetHomologyValence(matrices);
+	for (int i = 0; i < homologies.size(); ++i)
+	{
+		for (int j = 0; j < homologies[i].size(); ++j)
+		{
+			std::cout << homologies[i][j] << " ";
+		}
+		std::cout << std::endl;
+	}
+	return homologies;
+}
+
 std::vector<std::vector<int>> CubeSystem::GetHomology(CubicalSet& K, bool CCR)
 {
 	// get the generators for C_k:
@@ -228,6 +381,7 @@ std::vector<std::vector<int>> CubeSystem::GetHomology(CubicalSet& K, bool CCR)
 	}
 
 	std::vector<IntMat> D;
+
 	if (CCR)
 	{
 		// get the boundary operators:
@@ -247,6 +401,14 @@ std::vector<std::vector<int>> CubeSystem::GetHomology(CubicalSet& K, bool CCR)
 
 	// compute the homology groups:
 	std::vector<std::vector<int>> hom = Homology::GetHomology(D);
+	for (int i = 0; i < hom.size(); ++i)
+	{
+		for (int j = 0; j < hom[i].size(); ++j)
+		{
+			std::cout << hom[i][j] << " ";
+		}
+		std::cout << std::endl;
+	}
 	return hom;
 }
 
@@ -327,10 +489,10 @@ void CubeSystem::Homology(CubicalSet& K, bool CCR)
 	//Homology::AnalyzeHomology(H);
 }
 
-
+/*
 void CubeSystem::Reduce(ChainComplex& E, BoundaryMap& bd, int i, Cube& a, Cube& b)
 {
-	//std::cout << "i = " << i << std::endl;
+	std::cout << "i = " << i << std::endl;
 	for (Cube cube : E[i])
 	{
 		bd[i-1][cube].erase(b);
@@ -338,11 +500,79 @@ void CubeSystem::Reduce(ChainComplex& E, BoundaryMap& bd, int i, Cube& a, Cube& 
 
 	for (Cube cube : E[i-1])
 	{
-		if (bd[i-2][cube].find(a) != bd[i-2][cube].end())
-		{
+		//if (bd[i-2][cube].find(a) != bd[i-2][cube].end())
+		//{
 			for (auto it : bd[i-1][b])
 			{
+				//std::cout << bd[i-1][cube][it.first] << std::endl;
 				bd[i-1][cube][it.first] -= bd[i-1][cube][a] * bd[i-1][b][a] * bd[i-1][b][it.first];
+				//std::cout << bd[i-1][cube][it.first] << std::endl;
+			}
+		//}
+	}
+
+	RemoveElementFromVector(E[i], b);		
+	RemoveElementFromVector(E[i - 1], a);		
+	bd[i-1].erase(b);
+	bd[i-2].erase(a);
+}
+*/
+void CubeSystem::Reduce(ChainComplex& E, BoundaryMap& bd, int i, Cube& a, Cube& b)
+{
+	/*
+	std::cout << "*************************" << std::endl;
+	std::cout << "Cube b: " << std::endl;
+	b.Print();
+	std::cout << "Cube a: " << std::endl;
+	a.Print();
+	*/
+
+	// Remove b as a boundary of all (i+1)-dim cubes.
+	if (i < E.size() - 1)
+	{
+		for (Cube cube : E[i+1])
+		{
+			if (bd[i][cube].find(b) != bd[i][cube].end())
+			{
+				/*
+				std::cout << "Erasing b from cube: " << std::endl;
+				cube.Print();
+				*/
+				bd[i][cube].erase(b);
+			}
+		}
+	}
+
+	// Update the other affected i-dim cubes.
+	for (Cube cube : E[i])
+	{
+		if (cube == b)
+			continue;
+
+		// Only update if a was attached to cube.
+		if (bd[i-1][cube].find(a) != bd[i-1][cube].end())
+		{
+			/*
+			std::cout << "** Found cube attached to a: " << std::endl;
+			cube.Print();
+			*/
+
+			// For all cubes attached to b, update:
+			for (auto it : bd[i-1][b])
+			{
+				const Cube& c = it.first;
+				/*
+				std::cout << "* Recalculating boundary of cube: " << std::endl;
+				c.Print();
+				*/
+
+				/*
+				std::cout << "Original value: ";
+				std::cout << bd[i-1][cube][c] << ". ";
+				std::cout << "New value: ";
+				std::cout << bd[i-1][cube][c] << ". " << std::endl;
+				*/
+				bd[i-1][cube][c] -= bd[i-1][cube][a] * bd[i-1][b][a] * bd[i-1][b][c];
 			}
 		}
 	}
@@ -373,6 +603,7 @@ void CubeSystem::RemoveElementFromVector(std::vector<Cube>& v, Cube& e)
 // * I misinterpreted the typo in the book, even though this algorithm does work in 2D.
 // * the boundary operator is bugged in 3D (my fault).
 // * I just screwed up in general (most likely case).
+/*
 void CubeSystem::ReduceChainComplex(ChainComplex& E, BoundaryMap& bd)
 {
 	for (int i = E.size() - 1; i > 1; --i)
@@ -380,31 +611,79 @@ void CubeSystem::ReduceChainComplex(ChainComplex& E, BoundaryMap& bd)
 		bool found = false;
 		while (!found)
 		{
-			//std::cout << "i = " << i << std::endl;
+			std::cout << "i = " << i << std::endl;
 			for (Cube b : E[i])
 			{
 				for (Cube a : E[i-1])
 				{
-					if (bd[i-1].find(b) != bd[i-1].end())
-					{
-						if (bd[i-1][b].find(a) != bd[i-1][b].end())
-						{
+					//if (bd[i-1].find(b) != bd[i-1].end())
+				//	{
+					//	if (bd[i-1][b].find(a) != bd[i-1][b].end())
+					//	{
 							if (std::abs(bd[i-1][b][a] == 1))
 							{
-								/*
 								std::cout << "Reducing: " << std::endl;
 								a.Print();
 								b.Print();
-								*/
 
+								Reduce(E, bd, i, a, b);
+								found = true;
+								//break;
+							}
+					//	}
+				//	}
+				}
+			}
+			found = true;
+		}
+	}
+}
+*/
+
+// WARNING:
+// Possible fix: we weren't breaking the correct loop. 
+// Upon finding a reduction pair and reducing, we need to break out of the while(!found) loop.
+// Not entirely sure why, but this seems to fix the issue.
+void CubeSystem::ReduceChainComplex(ChainComplex& E, BoundaryMap& bd)
+{
+	// The index i is the dimension we are looking at.
+	// Attempting to reduce an i-dim face by an (i-1)-dim face.
+	// Start at i equal to the top dimension, down to i=1 (edges).
+	//for (int i = E.size() - 1; i > 1; --i)
+	for (int i = E.size() - 1; i > E.size() - 2; --i)
+	{
+		bool found = false;
+		while (!found)
+		{
+			// b is an i-dimensional face.
+			for (Cube b : E[i])
+			{
+				if (found)
+					break;
+
+				// a is an (i-1)-dimensional face.
+				for (Cube a : E[i-1])
+				{
+					if (found)
+						break;
+					//if (bd[i-1].find(b) != bd[i-1].end())
+				//	{
+						if (bd[i-1][b].find(a) != bd[i-1][b].end())
+						{
+							// Recall bd[i-1] is the boundary from C_i to C_{i-1}, so use bd[i-1](b).
+							if (std::abs(bd[i-1][b][a]) == 1)
+							{
 								Reduce(E, bd, i, a, b);
 								found = true;
 								break;
 							}
 						}
-					}
+				//	}
 				}
 			}
+			// Exit condition if no pairs were found.
+			if (!found)
+				found = true;
 		}
 	}
 }

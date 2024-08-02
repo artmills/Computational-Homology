@@ -7,6 +7,10 @@
 #include <chrono>
 #include <algorithm>
 
+#include <givaro/givinteger.h>
+#include <linbox/matrix/sparse-matrix.h>
+#include <linbox/matrix/sparse-formats.h>
+
 #include "cube.hpp"
 #include "keyhasher.hpp"
 #include "cubicalset.hpp"
@@ -19,9 +23,19 @@ typedef std::unordered_map<Cube, int, KeyHasher> Chain;
 typedef std::unordered_map<Cube, Chain, KeyHasher> Boundary;
 typedef std::vector<Boundary> BoundaryMap;
 
+// Linbox typedefs for convenience.
+typedef Givaro::ZRing<Givaro::Integer> Integers;
+//typedef LinBox::SparseMatrix<Integers> Matrix;
+typedef LinBox::SparseMatrix<Integers, LinBox::SparseMatrixFormat::COO> Matrix;
+
 // responsible for performing operations on cubes.
 namespace CubeSystem
 {
+	// LinBox: global variable for the ring of integers.
+	Integers ZZ;
+
+	// LinBox:: print method to help debug matrix.
+	void Print(Matrix& m);
 
 	// 3.66: convert a chain to a coordinate vector.
 	std::vector<int> CanonicalCoordinates(Chain& c, std::vector<Cube>& cubes);
@@ -53,12 +67,20 @@ namespace CubeSystem
 	std::vector<IntMat> BoundaryOperatorMatrix(std::vector<std::vector<Cube>>& E);
 	std::vector<IntMat> BoundaryOperatorMatrix(std::vector<std::vector<Cube>>& E, BoundaryMap& bd);
 
+	// LinBox versions.
+	std::vector<Matrix> BoundaryOperatorMatrixLinBox(std::vector<std::vector<Cube>>& E);
+	std::vector<Matrix> BoundaryOperatorMatrixLinBox(std::vector<std::vector<Cube>>& E, BoundaryMap& bd);
+
 
 	// THE GRAND FINALE!
 	// 3.78: we won't bother with algorithm 3.77 at the moment.
 	// we're only interested in the orders of the homology groups, not 
 	// the chain bases.
 	std::vector<std::vector<int>> GetHomology(CubicalSet& K, bool CCR); 
+
+	// LinBox version.
+	std::vector<std::vector<int>> GetHomologyLinBox(CubicalSet& K, bool CCR); 
+
 	void Homology(CubicalSet& K, bool CCR); 
 	
 	// utility.
