@@ -8,6 +8,9 @@ This program uses the matrix-based methods suggested by Kacynski's textbook and 
 The sizes of the matrices are huge (especially for higher-dimensional problems) and computation of the Smith normal form is extremely intensive.
 The Smith normal form computations are now done using the open-source project LinBox, which greatly improves the computation time.
 
+To demonstrate the capabilities of the project, grids of active/non-active squares are generated using Conway's Game of Life (cellular automata).
+The active grids are then converted into cubical chains, whose homology is computed.
+
 This project arose from the topology/geometry seminar at Oregon State University in 2019.
 I worked with Danny Wentland and Chung-Ping Lai to introduce the seminar to topological data analysis, with the guidance of our advisor Dr. Christine Escher.
 My contribution was to learn and implement the basic features of computational cubical homology, including homology computations on n-dimensional cubes and performing elementary reductions to make those computations more efficient.
