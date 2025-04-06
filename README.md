@@ -13,3 +13,5 @@ I worked with Danny Wentland and Chung-Ping Lai to introduce the seminar to topo
 My contribution was to learn and implement the basic features of computational cubical homology, including homology computations on n-dimensional cubes and performing elementary reductions to make those computations more efficient.
 Although this project is nowhere near performant enough for real applications, it was a great way to learn the foundational techniques in the field.
 For an infinitely more robust cubical homology package, consider the project CHoMP. 
+
+![ex40x40color](https://github.com/user-attachments/assets/23ed63b4-a8ac-4f22-bd43-f1ccec03e347)
