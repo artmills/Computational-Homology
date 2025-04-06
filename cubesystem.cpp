@@ -325,12 +325,16 @@ std::vector<std::vector<int>> CubeSystem::GetHomologyLinBox(CubicalSet& K, bool 
 		BoundaryMap bd = Boundaries(E);
 
 		// apply the CCR algorithm:
-		//ReduceChainComplex(E, bd);		
-
-		int ITERATIONS = 500;
-		for (int i = 0; i < ITERATIONS; ++i)
+		std::cout << "Size of chain groups before CCR:" << std::endl;
+		for (int i = 0; i < E.size(); ++i)
 		{
-			ReduceChainComplex(E, bd);
+			std::cout << E[i].size() << std::endl;
+		}
+		ReduceChainComplex(E, bd);		
+		std::cout << "Size of chain groups after CCR:" << std::endl;
+		for (int i = 0; i < E.size(); ++i)
+		{
+			std::cout << E[i].size() << std::endl;
 		}
 	
 		// get the boundary operator matrices from the chains:
@@ -641,49 +645,58 @@ void CubeSystem::ReduceChainComplex(ChainComplex& E, BoundaryMap& bd)
 */
 
 // WARNING:
-// Possible fix: we weren't breaking the correct loop. 
-// Upon finding a reduction pair and reducing, we need to break out of the while(!found) loop.
-// Not entirely sure why, but this seems to fix the issue.
+// Bug was fixed for top-dim faces, but there is still an issue for lower-dim faces when the boundary map is changed.
+// For now, only perform this algorithm for top-dim faces when we collapse free faces.
 void CubeSystem::ReduceChainComplex(ChainComplex& E, BoundaryMap& bd)
 {
-	// The index i is the dimension we are looking at.
-	// Attempting to reduce an i-dim face by an (i-1)-dim face.
-	// Start at i equal to the top dimension, down to i=1 (edges).
-	//for (int i = E.size() - 1; i > 1; --i)
-	for (int i = E.size() - 1; i > E.size() - 2; --i)
+	// Loop until we've found no more reduction pairs.
+	bool reductionPairs = true;
+	while (reductionPairs)
 	{
-		bool found = false;
-		while (!found)
+		// The index i is the dimension we are looking at.
+		// Attempting to reduce an i-dim face by an (i-1)-dim face.
+		// Start at i equal to the top dimension, down to i=1 (edges).
+		//for (int i = E.size() - 1; i > 1; --i)
+		// WARNING: There is currently a bug for non-free faces.
+		// Keep the loop only for top-dim faces.
+		for (int i = E.size() - 1; i > E.size() - 2; --i)
 		{
-			// b is an i-dimensional face.
-			for (Cube b : E[i])
+			bool found = false;
+			while (!found)
 			{
-				if (found)
-					break;
-
-				// a is an (i-1)-dimensional face.
-				for (Cube a : E[i-1])
+				// b is an i-dimensional face.
+				for (Cube b : E[i])
 				{
 					if (found)
 						break;
-					//if (bd[i-1].find(b) != bd[i-1].end())
-				//	{
-						if (bd[i-1][b].find(a) != bd[i-1][b].end())
-						{
-							// Recall bd[i-1] is the boundary from C_i to C_{i-1}, so use bd[i-1](b).
-							if (std::abs(bd[i-1][b][a]) == 1)
+
+					// a is an (i-1)-dimensional face.
+					for (Cube a : E[i-1])
+					{
+						if (found)
+							break;
+						//if (bd[i-1].find(b) != bd[i-1].end())
+					//	{
+							if (bd[i-1][b].find(a) != bd[i-1][b].end())
 							{
-								Reduce(E, bd, i, a, b);
-								found = true;
-								break;
+								// Recall bd[i-1] is the boundary from C_i to C_{i-1}, so use bd[i-1](b).
+								if (std::abs(bd[i-1][b][a]) == 1)
+								{
+									Reduce(E, bd, i, a, b);
+									found = true;
+									break;
+								}
 							}
-						}
-				//	}
+					//	}
+					}
+				}
+				// Exit condition if no pairs were found.
+				if (!found)
+				{
+					found = true;
+					reductionPairs = false;
 				}
 			}
-			// Exit condition if no pairs were found.
-			if (!found)
-				found = true;
 		}
 	}
 }
